@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import Filter from "./Filter";
 import SearchBar from "./SearchBar";
+import OfficeViewer from "./OfficeViewer";
 import {
   academicFileUrl,
   supabase,
@@ -18,6 +19,11 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 function categoryLabel(category: string): string {
   return CATEGORY_LABELS[category] ?? category;
+}
+
+function isPdf(resource: AcademicResource): boolean {
+  if (resource.mime_type) return resource.mime_type === "application/pdf";
+  return resource.storage_path.toLowerCase().endsWith(".pdf");
 }
 
 export default function AcademicExplorer() {
@@ -132,7 +138,8 @@ export default function AcademicExplorer() {
 
       {resources.length === 0 ? (
         <p className="text-slate-500">
-          No materials uploaded yet. Use the upload script to add PDFs.
+          No materials uploaded yet. Use the upload script to add PDF or DOCX
+          files.
         </p>
       ) : filtered.length === 0 ? (
         <p className="text-slate-500">No resources match your filters.</p>
@@ -183,18 +190,25 @@ export default function AcademicExplorer() {
               Close
             </button>
           </div>
-          <Suspense
-            fallback={
-              <p className="py-10 text-center text-sm text-slate-500">
-                Loading viewer…
-              </p>
-            }
-          >
-            <PDFViewer
+          {isPdf(selected) ? (
+            <Suspense
+              fallback={
+                <p className="py-10 text-center text-sm text-slate-500">
+                  Loading viewer…
+                </p>
+              }
+            >
+              <PDFViewer
+                url={academicFileUrl(selected.storage_path)}
+                title={selected.title}
+              />
+            </Suspense>
+          ) : (
+            <OfficeViewer
               url={academicFileUrl(selected.storage_path)}
               title={selected.title}
             />
-          </Suspense>
+          )}
         </section>
       ) : null}
     </div>

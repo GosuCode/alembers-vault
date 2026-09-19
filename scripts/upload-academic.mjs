@@ -1,8 +1,9 @@
 #!/usr/bin/env node
-// Upload an academic PDF to the `academic` bucket and register its metadata.
+// Upload an academic document to the `academic` bucket and register metadata.
+// Supported: .pdf, .docx
 //
 // Usage:
-//   node --env-file=.env scripts/upload-academic.mjs <file.pdf> --title "..." \
+//   node --env-file=.env scripts/upload-academic.mjs <file> --title "..." \
 //     [--description "..."] [--category past-paper|project-pdf|notes|other] \
 //     [--course "..."] [--year 2024] [--tags math,final] [--overwrite]
 //
@@ -62,8 +63,15 @@ if (flags.year && Number.isNaN(year)) {
   process.exit(1);
 }
 
-if (extname(file).toLowerCase() !== ".pdf") {
-  console.error("Error: only .pdf uploads are supported by the academic bucket.");
+const MIME_BY_EXTENSION = {
+  ".pdf": "application/pdf",
+  ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+};
+const mimeType = MIME_BY_EXTENSION[extname(file).toLowerCase()];
+if (!mimeType) {
+  console.error(
+    `Error: unsupported file type "${extname(file) || "(none)"}". Allowed: ${Object.keys(MIME_BY_EXTENSION).join(", ")}.`,
+  );
   process.exit(1);
 }
 
@@ -89,7 +97,7 @@ const supabase = createClient(PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
 const body = await readFile(file);
 
 const upload = await supabase.storage.from("academic").upload(storagePath, body, {
-  contentType: "application/pdf",
+  contentType: mimeType,
   cacheControl: "31536000",
   upsert: Boolean(flags.overwrite),
 });
@@ -112,7 +120,7 @@ const record = {
   tags,
   storage_path: storagePath,
   file_size: size,
-  mime_type: "application/pdf",
+  mime_type: mimeType,
 };
 
 if (flags.overwrite) {

@@ -53,11 +53,12 @@ feature actually needs it. If a secret key leaks, revoke it on the same page.
 
 ## Academic archive
 
-PDFs live in the public `academic` storage bucket (50 MB per file, PDFs only).
-Metadata is stored in `public.academic_resources` with RLS enabled: anonymous
-read-only, writes only via the service role.
+Documents live in the public `academic` storage bucket (50 MB per file).
+Allowed types: **PDF** and **DOCX**. Metadata is stored in
+`public.academic_resources` with RLS enabled: anonymous read-only, writes only
+via the service role.
 
-Upload a PDF and register its metadata:
+Upload a document and register its metadata:
 
 ```sh
 pnpm upload ./papers/ds-final-2024.pdf \
@@ -66,7 +67,12 @@ pnpm upload ./papers/ds-final-2024.pdf \
 ```
 
 The resource appears on `/academic/` with client-side search, category/year
-filters, and an in-browser PDF preview (react-pdf).
+filters, and an in-browser preview: PDFs via react-pdf, DOCX via the Microsoft
+Office viewer (with a download fallback). Files are uploaded as-is — no
+compression is applied.
+
+> DOCX previews are rendered by Microsoft's online viewer, which fetches the
+> file from its public Supabase URL. The PDF path never leaves the browser.
 
 ## Deployment (Cloudflare)
 
