@@ -15,10 +15,12 @@ const projects = (await getCollection("projects")).sort(
 const latestPosts = posts.slice(0, 3);
 const featuredProjects = projects.slice(0, 2);
 
+const topics = new Set(posts.flatMap((post) => post.data.tags));
+
 const stats = [
   { label: "blog posts", value: String(posts.length) },
   { label: "projects", value: String(projects.length) },
-  { label: "files archived", value: "7+" },
+  { label: "topics", value: String(topics.size) },
 ];
 ---
 
