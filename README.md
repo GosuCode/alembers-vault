@@ -68,6 +68,38 @@ pnpm upload ./papers/ds-final-2024.pdf \
 The resource appears on `/academic/` with client-side search, category/year
 filters, and an in-browser PDF preview (react-pdf).
 
+## Deployment (Cloudflare Pages)
+
+Static output — no adapter needed. In the Cloudflare dashboard:
+
+1. **Workers & Pages → Create → Pages → Connect to Git**, pick
+   `GosuCode/alembers-vault`.
+2. Build settings:
+   - Framework preset: **Astro**
+   - Build command: `pnpm build`
+   - Build output directory: `dist`
+   - Environment variable: `NODE_VERSION` = `22`
+3. **Environment variables** (Production and Preview):
+   - `PUBLIC_SUPABASE_URL` = `https://bunlkimihykrtxitgwmg.supabase.co`
+   - `PUBLIC_SUPABASE_ANON_KEY` = your `sb_publishable_...` key
+
+   Do **not** add `SUPABASE_SERVICE_ROLE_KEY` — the deployed site is read-only
+   and never needs it.
+4. Deploy. Pushes to `main` redeploy automatically.
+5. After attaching a custom domain, update `site` in `astro.config.mjs` and the
+   `Sitemap:` line in `public/robots.txt`.
+
+`public/_headers` adds security headers and long-lived caching for hashed
+`/_astro/*` assets. `@astrojs/sitemap` emits `/sitemap-index.xml`.
+
+PDF files are served by Supabase's CDN, not Cloudflare, so hosting bandwidth
+stays tiny regardless of download volume. Measured download of a 2 MB PDF:
+~0.9 s cold (~2.4 MB/s), ~0.2 s warm. Supabase sends `cache-control: no-cache`
+on public objects, so the edge revalidates on each request rather than serving
+a long-lived cache hit; the uploader still records `max-age=31536000` as object
+metadata for when that is honored. Keep PDFs compressed to stay within the
+1 GB free-tier bucket limit.
+
 ## Structure
 
 ```text

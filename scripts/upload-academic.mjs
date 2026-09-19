@@ -90,6 +90,7 @@ const body = await readFile(file);
 
 const upload = await supabase.storage.from("academic").upload(storagePath, body, {
   contentType: "application/pdf",
+  cacheControl: "31536000",
   upsert: Boolean(flags.overwrite),
 });
 
