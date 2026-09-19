@@ -19,51 +19,49 @@ const { project } = Astro.props;
 const { Content } = await render(project);
 const { title, description, pubDate, tags, repo, demo } = project.data;
 const links = [
-  { href: repo, label: "Repository" },
-  { href: demo, label: "Live demo" },
+  { href: repo, label: "repo" },
+  { href: demo, label: "demo" },
 ].filter((link): link is { href: string; label: string } => Boolean(link.href));
 ---
 
 <BaseLayout title={`${title} · Projects`} description={description}>
-  <main class="mx-auto max-w-3xl px-6 py-14">
+  <main class="mx-auto max-w-3xl px-6 py-12">
     <a
       href="/projects/"
-      class="inline-flex items-center gap-1 text-sm font-medium text-muted transition hover:text-coral-dark"
+      class="font-hand text-xl text-accent transition hover:text-accent-dark"
     >
-      ← All projects
+      ← all projects
     </a>
 
-    <article class="mt-8">
+    <article class="margin-rule mt-8 pl-6 sm:pl-10">
       <header>
+        <p class="font-hand text-xl text-pencil">{formatDate(pubDate)}</p>
         <h1
-          class="font-display text-3xl font-semibold leading-tight tracking-tight sm:text-4xl"
+          class="mt-2 text-3xl font-semibold leading-tight tracking-tight sm:text-4xl"
         >
           {title}
         </h1>
-        <p class="mt-4 text-lg text-muted">{description}</p>
-        <div
-          class="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted"
-        >
-          <time datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>
-          <ul class="flex flex-wrap gap-2">
-            {
-              tags.map((tag) => (
-                <li class="rounded-full bg-peach/50 px-3 py-1 text-xs font-medium text-coral-dark">
+        <p class="mt-4 text-lg text-pencil">{description}</p>
+        {
+          tags.length > 0 && (
+            <ul class="mt-4 flex flex-wrap gap-2">
+              {tags.map((tag) => (
+                <li class="rounded-full border border-dashed border-pencil/50 px-2.5 py-0.5 font-hand text-base leading-tight text-pencil">
                   {tag}
                 </li>
-              ))
-            }
-          </ul>
-        </div>
+              ))}
+            </ul>
+          )
+        }
         {
           links.length > 0 && (
-            <div class="mt-5 flex flex-wrap gap-2">
+            <div class="mt-5 flex flex-wrap gap-3">
               {links.map(({ href, label }) => (
                 <a
                   href={href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="rounded-full bg-coral px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-coral-dark"
+                  class="rounded-md border border-ink/80 bg-marker px-4 py-1.5 font-hand text-xl leading-tight pop-sm transition hover:-translate-y-0.5"
                 >
                   {label} ↗
                 </a>
@@ -73,7 +71,7 @@ const links = [
         }
       </header>
 
-      <div class="prose prose-lg mt-10 max-w-none prose-headings:font-display">
+      <div class="prose prose-lg mt-10 max-w-none">
         <Content />
       </div>
     </article>

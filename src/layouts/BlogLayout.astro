@@ -26,42 +26,31 @@ const {
 ---
 
 <BaseLayout title={`${title} · Blogs`} description={description}>
-  <main class="mx-auto max-w-3xl px-6 py-14">
+  <main class="mx-auto max-w-3xl px-6 py-12">
     <a
       href="/blogs/"
-      class="inline-flex items-center gap-1 text-sm font-medium text-muted transition hover:text-coral-dark"
+      class="font-hand text-xl text-accent transition hover:text-accent-dark"
     >
-      ← All blogs
+      ← all blogs
     </a>
 
-    <article class="mt-8">
+    <article class="margin-rule mt-8 pl-6 sm:pl-10">
       <header>
+        <p class="font-hand text-xl text-pencil">
+          {formatDate(pubDate)}
+          {updatedDate && ` · updated ${formatDate(updatedDate)}`}
+        </p>
         <h1
-          class="font-display text-3xl font-semibold leading-tight tracking-tight sm:text-4xl"
+          class="mt-2 text-3xl font-semibold leading-tight tracking-tight sm:text-4xl"
         >
           {title}
         </h1>
-        <p class="mt-4 text-lg text-muted">{description}</p>
-        <div
-          class="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted"
-        >
-          <time datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>
-          {
-            updatedDate && (
-              <span class="rounded-full border border-line bg-surface px-3 py-0.5 text-xs">
-                Updated{" "}
-                <time datetime={updatedDate.toISOString()}>
-                  {formatDate(updatedDate)}
-                </time>
-              </span>
-            )
-          }
-        </div>
+        <p class="mt-4 text-lg text-pencil">{description}</p>
         {
           tags.length > 0 && (
             <ul class="mt-4 flex flex-wrap gap-2">
               {tags.map((tag) => (
-                <li class="rounded-full bg-peach/50 px-3 py-1 text-xs font-medium text-coral-dark">
+                <li class="rounded-full border border-dashed border-pencil/50 px-2.5 py-0.5 font-hand text-base leading-tight text-pencil">
                   {tag}
                 </li>
               ))}
@@ -72,15 +61,17 @@ const {
 
       {
         heroImage && (
-          <Image
-            src={heroImage}
-            alt={heroImageAlt}
-            class="mt-8 w-full rounded-3xl border border-line"
-          />
+          <div class="mt-8 -rotate-[0.6deg]">
+            <Image
+              src={heroImage}
+              alt={heroImageAlt}
+              class="w-full rounded-lg border border-ink/80 pop-sm"
+            />
+          </div>
         )
       }
 
-      <div class="prose prose-lg mt-10 max-w-none prose-headings:font-display">
+      <div class="prose prose-lg mt-10 max-w-none">
         <slot />
       </div>
     </article>

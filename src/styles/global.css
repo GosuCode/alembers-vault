@@ -2,39 +2,110 @@
 @plugin "@tailwindcss/typography";
 
 @theme {
-  --font-sans: "Nunito", ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-display: "Fraunces", ui-serif, Georgia, serif;
+  --font-sans: "Newsreader", ui-serif, Georgia, Cambria, serif;
+  --font-hand: "Caveat", "Segoe Print", cursive;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 
-  --color-cream: #fffaf4;
-  --color-surface: #ffffff;
-  --color-ink: #2b2430;
-  --color-muted: #7c7280;
-  --color-line: #f1e7dd;
+  --color-paper: #faf5ea;
+  --color-paper-deep: #f3ecdd;
+  --color-ink: #211c16;
+  --color-pencil: #6f6455;
+  --color-line: #e4dac8;
 
-  --color-coral: #ff7a59;
-  --color-coral-dark: #e85c38;
-  --color-peach: #ffd9c7;
-  --color-mint: #a7e3cd;
-  --color-lilac: #cdbcef;
-  --color-butter: #ffe6a7;
+  --color-accent: #d4452a;
+  --color-accent-dark: #ad351f;
+  --color-marker: #ffe08a;
+  --color-mint: #bfe3d2;
+  --color-sky: #c7dcf0;
 }
 
 @layer base {
   body {
-    @apply bg-cream text-ink font-sans antialiased;
+    @apply bg-paper text-ink font-sans antialiased;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
   }
 
   ::selection {
-    background: var(--color-peach);
+    background: var(--color-marker);
+  }
+}
+
+@layer components {
+  /* Hand-drawn squiggle underline */
+  .squiggle {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 12' preserveAspectRatio='none'%3E%3Cpath d='M2 8 C 45 2, 65 12, 100 6 S 158 2, 198 8' fill='none' stroke='%23d4452a' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    background-size: 100% 0.45em;
+    padding-bottom: 0.18em;
+  }
+
+  .sketch-underline {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 8' preserveAspectRatio='none'%3E%3Cpath d='M1 5 C 50 1, 80 8, 120 4 S 170 2, 199 6' fill='none' stroke='%236f6455' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    background-size: 100% 0.35em;
+    padding-bottom: 0.1em;
+  }
+
+  /* Marker highlight behind words */
+  .marker {
+    background: linear-gradient(
+      180deg,
+      transparent 58%,
+      var(--color-marker) 58%
+    );
+    padding: 0 0.08em;
+  }
+
+  /* Sticker-style hard shadow */
+  .pop {
+    box-shadow: 4px 4px 0 0 var(--color-ink);
+  }
+  .pop-sm {
+    box-shadow: 2px 2px 0 0 var(--color-ink);
+  }
+  .pop-accent {
+    box-shadow: 4px 4px 0 0 var(--color-accent);
+  }
+
+  /* Washi tape strip */
+  .tape {
+    position: absolute;
+    width: 5.5rem;
+    height: 1.5rem;
+    background: color-mix(in srgb, var(--color-marker) 70%, white);
+    border-left: 1px dashed rgba(33, 28, 22, 0.18);
+    border-right: 1px dashed rgba(33, 28, 22, 0.18);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  }
+
+  /* Notebook margin rule */
+  .margin-rule {
+    position: relative;
+  }
+  .margin-rule::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: color-mix(in srgb, var(--color-accent) 45%, transparent);
+  }
+
+  .card-paper {
+    @apply rounded-lg border border-ink/80 bg-white;
   }
 }
 
 .prose {
-  --tw-prose-links: var(--color-coral-dark);
+  --tw-prose-links: var(--color-accent-dark);
   --tw-prose-headings: var(--color-ink);
-  --tw-prose-body: #4c4552;
-  --tw-prose-bullets: var(--color-coral);
+  --tw-prose-body: #3c352c;
+  --tw-prose-bullets: var(--color-accent);
   --tw-prose-quotes: var(--color-ink);
-  --tw-prose-quote-borders: var(--color-peach);
-  --tw-prose-code: var(--color-coral-dark);
+  --tw-prose-quote-borders: var(--color-accent);
+  --tw-prose-code: var(--color-accent-dark);
+  --tw-prose-hr: var(--color-line);
 }

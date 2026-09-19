@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import { site } from "../data/site";
 
 interface Props {
   title?: string;
@@ -7,15 +8,16 @@ interface Props {
 }
 
 const {
-  title = "Alember's Vault",
-  description = "A personal archive of tech blogs, academic materials, and software projects.",
+  title = `${site.name} · Alember's Vault`,
+  description = "Notes, papers, and projects by Shreesh Alember.",
 } = Astro.props;
 
 const nav = [
-  { href: "/", label: "Home" },
-  { href: "/blogs/", label: "Blogs" },
-  { href: "/academic/", label: "Academic" },
-  { href: "/projects/", label: "Projects" },
+  { href: "/", label: "home" },
+  { href: "/blogs/", label: "blogs" },
+  { href: "/academic/", label: "academic" },
+  { href: "/projects/", label: "projects" },
+  { href: "/about/", label: "about" },
 ];
 
 const currentPath = Astro.url.pathname;
@@ -38,75 +40,47 @@ const year = new Date().getFullYear();
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Nunito:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,16..72,400;0,16..72,500;0,16..72,600;1,16..72,400&display=swap"
     />
     <title>{title}</title>
   </head>
   <body class="flex min-h-screen flex-col">
     <header
-      class="sticky top-0 z-50 border-b border-line/70 bg-cream/80 backdrop-blur-md"
+      class="sticky top-0 z-50 border-b border-dashed border-line bg-paper/90 backdrop-blur"
     >
       <nav
-        class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-6 py-3.5"
+        class="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-6 py-3"
       >
-        <a href="/" class="flex items-center gap-2.5">
+        <a href="/" class="flex items-center gap-3">
           <span
-            class="grid h-9 w-9 place-items-center rounded-2xl bg-coral text-white shadow-sm"
+            class="relative grid h-11 w-11 shrink-0 -rotate-3 place-items-center rounded-md border border-ink/80 bg-white pop-sm"
           >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="h-5 w-5"
-              aria-hidden="true"
-            >
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-            </svg>
+            <span
+              class="tape -top-3 left-1/2 h-5 w-14 -translate-x-1/2 -rotate-6"
+            ></span>
+            <span class="font-hand text-xl font-bold">{site.initials}</span>
           </span>
-          <span class="font-display text-lg font-semibold tracking-tight">
-            Alember's Vault
+          <span class="leading-tight">
+            <span class="block text-base font-semibold">{site.name}</span>
+            <span class="block font-hand text-base text-pencil">
+              {site.tagline}
+            </span>
           </span>
         </a>
 
-        <ul
-          class="hidden items-center gap-1 rounded-full border border-line bg-surface p-1 text-sm shadow-sm sm:flex"
-        >
+        <ul class="flex flex-wrap items-center gap-x-5 gap-y-1 font-hand text-xl">
           {
             nav.map(({ href, label }) => (
               <li>
                 <a
                   href={href}
                   class:list={[
-                    "block rounded-full px-3.5 py-1.5 font-medium transition-colors",
+                    "transition-colors hover:text-accent",
                     isActive(href)
-                      ? "bg-coral text-white"
-                      : "text-muted hover:text-ink",
+                      ? "squiggle text-accent"
+                      : "text-ink/80",
                   ]}
                   aria-current={isActive(href) ? "page" : undefined}
-                >
-                  {label}
-                </a>
-              </li>
-            ))
-          }
-        </ul>
-
-        <ul class="flex items-center gap-1 text-sm sm:hidden">
-          {
-            nav.map(({ href, label }) => (
-              <li>
-                <a
-                  href={href}
-                  class:list={[
-                    "block rounded-full px-2.5 py-1.5 font-medium transition-colors",
-                    isActive(href)
-                      ? "bg-coral text-white"
-                      : "text-muted hover:text-ink",
-                  ]}
                 >
                   {label}
                 </a>
@@ -121,12 +95,32 @@ const year = new Date().getFullYear();
       <slot />
     </div>
 
-    <footer class="mt-24 border-t border-line">
+    <footer class="mt-24 border-t border-dashed border-line">
       <div
-        class="mx-auto flex max-w-5xl flex-col gap-2 px-6 py-10 text-sm text-muted sm:flex-row sm:items-center sm:justify-between"
+        class="mx-auto flex max-w-5xl flex-col gap-4 px-6 py-10 sm:flex-row sm:items-end sm:justify-between"
       >
-        <p>© {year} Alember's Vault</p>
-        <p>Built with Astro · Supabase</p>
+        <div>
+          <p class="font-hand text-3xl text-ink">— {site.shortName}</p>
+          <p class="mt-1 text-sm text-pencil">
+            © {year} {site.name} · {site.location}
+          </p>
+        </div>
+        <ul class="flex flex-wrap gap-5 font-hand text-xl">
+          {
+            site.socials.map((social) => (
+              <li>
+                <a
+                  href={social.href}
+                  class="text-ink/80 transition-colors hover:text-accent"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {social.label} ↗
+                </a>
+              </li>
+            ))
+          }
+        </ul>
       </div>
     </footer>
   </body>

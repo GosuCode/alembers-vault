@@ -12,9 +12,11 @@ const { title, description, pubDate, tags, heroImage, heroImageAlt } = post.data
 ---
 
 <article
-  class="group flex h-full flex-col overflow-hidden rounded-3xl border border-line bg-surface shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-md"
+  class="group relative flex h-full flex-col card-paper p-3 pop transition duration-200 hover:-translate-y-1"
 >
-  <a href={`/blogs/${post.id}/`} class="block overflow-hidden">
+  <span class="tape -top-2.5 left-6 -rotate-6"></span>
+
+  <a href={`/blogs/${post.id}/`} class="block overflow-hidden rounded-md border border-ink/15">
     {
       heroImage ? (
         <Image
@@ -23,29 +25,34 @@ const { title, description, pubDate, tags, heroImage, heroImageAlt } = post.data
           class="aspect-[16/9] w-full object-cover transition duration-300 group-hover:scale-[1.03]"
         />
       ) : (
-        <div class="aspect-[16/9] w-full bg-peach/40" />
+        <div class="grid aspect-[16/9] w-full place-items-center bg-paper-deep">
+          <span class="font-hand text-2xl text-pencil">no cover yet</span>
+        </div>
       )
     }
   </a>
 
-  <div class="flex flex-1 flex-col p-5">
-    <time datetime={pubDate.toISOString()} class="text-xs text-muted">
+  <div class="flex flex-1 flex-col px-2 pb-2 pt-4">
+    <time
+      datetime={pubDate.toISOString()}
+      class="font-hand text-lg leading-none text-pencil"
+    >
       {formatDate(pubDate)}
     </time>
-    <h3 class="mt-2 font-display text-lg font-semibold leading-snug">
+    <h3 class="mt-2 text-lg font-semibold leading-snug">
       <a
         href={`/blogs/${post.id}/`}
-        class="transition-colors group-hover:text-coral-dark"
+        class="transition-colors group-hover:text-accent"
       >
         {title}
       </a>
     </h3>
-    <p class="mt-2 line-clamp-3 text-sm text-muted">{description}</p>
+    <p class="mt-2 line-clamp-3 text-sm text-pencil">{description}</p>
     {
       tags.length > 0 && (
         <ul class="mt-auto flex flex-wrap gap-2 pt-4">
           {tags.map((tag) => (
-            <li class="rounded-full border border-line bg-cream px-2.5 py-0.5 text-xs text-muted">
+            <li class="rounded-full border border-dashed border-pencil/50 px-2.5 py-0.5 font-hand text-base leading-tight text-pencil">
               {tag}
             </li>
           ))}

@@ -29,11 +29,11 @@ export default function PDFViewer({ url, title }: Props) {
 
   return (
     <div ref={containerRef} className="flex flex-col gap-4">
-      <div className="flex items-center justify-between gap-4 text-sm">
-        <span className="truncate font-medium text-ink">{title}</span>
-        <div className="flex shrink-0 items-center gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <span className="font-hand text-xl text-pencil">{title}</span>
+        <div className="flex shrink-0 items-center gap-2">
           {numPages ? (
-            <span className="rounded-full border border-line bg-cream px-2.5 py-0.5 text-xs text-muted">
+            <span className="rounded-full border border-dashed border-pencil/50 px-2.5 py-0.5 font-hand text-base leading-tight text-pencil">
               {numPages} page{numPages === 1 ? "" : "s"}
             </span>
           ) : null}
@@ -41,9 +41,9 @@ export default function PDFViewer({ url, title }: Props) {
             href={url}
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded-full border border-line px-4 py-1.5 text-xs font-semibold text-ink transition hover:border-coral hover:text-coral-dark"
+            className="rounded-md border border-ink/80 bg-white px-3 py-1 font-hand text-lg leading-tight transition hover:bg-marker"
           >
-            Open ↗
+            open ↗
           </a>
         </div>
       </div>
@@ -52,14 +52,16 @@ export default function PDFViewer({ url, title }: Props) {
         file={url}
         onLoadSuccess={(pdf) => setNumPages(pdf.numPages)}
         loading={
-          <p className="py-10 text-center text-sm text-muted">Loading PDF…</p>
+          <p className="py-10 text-center font-hand text-xl text-pencil">
+            loading the pages…
+          </p>
         }
         error={
-          <p className="py-10 text-center text-sm text-coral-dark">
+          <p className="py-10 text-center text-accent-dark">
             Could not load this PDF.
           </p>
         }
-        className="overflow-hidden rounded-3xl border border-line"
+        className="overflow-hidden rounded-lg border border-ink/60"
       >
         {Array.from({ length: numPages ?? 0 }, (_, index) => (
           <Page

@@ -107,12 +107,14 @@ export default function AcademicExplorer() {
   }, [resources, query, category, year]);
 
   if (status === "loading") {
-    return <p className="py-12 text-sm text-muted">Loading archive…</p>;
+    return (
+      <p className="font-hand text-2xl text-pencil">opening the cabinet…</p>
+    );
   }
 
   if (status === "error") {
     return (
-      <p className="py-12 text-sm text-coral-dark">
+      <p className="text-accent-dark">
         Could not load the academic archive. Please try again later.
       </p>
     );
@@ -120,69 +122,67 @@ export default function AcademicExplorer() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="grid gap-3 sm:grid-cols-[1fr_auto_auto] sm:items-end">
+      <div className="grid gap-4 sm:grid-cols-[1fr_auto_auto] sm:items-end">
         <SearchBar value={query} onChange={setQuery} />
         <Filter
-          label="Category"
+          label="category"
           value={category}
           options={categories}
           onChange={setCategory}
         />
-        <Filter label="Year" value={year} options={years} onChange={setYear} />
+        <Filter label="year" value={year} options={years} onChange={setYear} />
       </div>
 
-      <p className="text-sm text-muted">
-        Showing <span className="font-semibold text-ink">{filtered.length}</span>{" "}
-        of {resources.length} resources
+      <p className="font-hand text-xl text-pencil">
+        {filtered.length} of {resources.length} in the drawer
       </p>
 
       {resources.length === 0 ? (
-        <p className="text-muted">
-          No materials uploaded yet. Use the upload script to add PDF or DOCX
-          files.
+        <p className="text-pencil">
+          Nothing filed yet — add a PDF or DOCX with the upload script.
         </p>
       ) : filtered.length === 0 ? (
-        <p className="text-muted">No resources match your filters.</p>
+        <p className="text-pencil">Nothing matches that filter.</p>
       ) : (
-        <ul className="flex flex-col gap-3">
+        <ul className="grid gap-4 sm:grid-cols-2">
           {filtered.map((resource) => (
             <li key={resource.id}>
               <button
                 type="button"
                 onClick={() => setSelected(resource)}
-                className="w-full rounded-3xl border border-line bg-surface p-6 text-left shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                className="relative block h-full w-full rounded-lg border border-ink/80 bg-white p-5 text-left pop-sm transition duration-200 hover:-translate-y-1"
               >
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <h2 className="font-display text-lg font-semibold leading-snug">
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <h2 className="text-base font-semibold leading-snug">
                     {resource.title}
                   </h2>
-                  <span className="shrink-0 rounded-full bg-peach/50 px-3 py-1 text-xs font-semibold text-coral-dark">
+                  <span className="shrink-0 -rotate-2 rounded-full border border-ink/70 bg-marker px-2.5 py-0.5 font-hand text-base leading-tight">
                     {categoryLabel(resource.category)}
                   </span>
                 </div>
                 {resource.description ? (
-                  <p className="mt-2 text-sm text-muted">
+                  <p className="mt-2 line-clamp-2 text-sm text-pencil">
                     {resource.description}
                   </p>
                 ) : null}
-                <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-muted">
-                  <span className="rounded-full border border-line bg-cream px-2.5 py-0.5 font-medium">
+                <div className="mt-4 flex flex-wrap items-center gap-2 font-hand text-base text-pencil">
+                  <span className="rounded-full border border-dashed border-pencil/50 px-2.5 py-0.5 leading-tight">
                     {fileKind(resource)}
                   </span>
                   {resource.course ? (
-                    <span className="rounded-full border border-line bg-cream px-2.5 py-0.5">
+                    <span className="rounded-full border border-dashed border-pencil/50 px-2.5 py-0.5 leading-tight">
                       {resource.course}
                     </span>
                   ) : null}
                   {resource.year ? (
-                    <span className="rounded-full border border-line bg-cream px-2.5 py-0.5">
+                    <span className="rounded-full border border-dashed border-pencil/50 px-2.5 py-0.5 leading-tight">
                       {resource.year}
                     </span>
                   ) : null}
-                  {resource.tags.map((tag) => (
+                  {resource.tags.slice(0, 3).map((tag) => (
                     <span
                       key={tag}
-                      className="rounded-full border border-line bg-cream px-2.5 py-0.5"
+                      className="rounded-full border border-dashed border-pencil/50 px-2.5 py-0.5 leading-tight"
                     >
                       #{tag}
                     </span>
@@ -197,25 +197,24 @@ export default function AcademicExplorer() {
       {selected ? (
         <section
           id="viewer"
-          className="rounded-3xl border border-line bg-surface p-6 shadow-sm"
+          className="relative rounded-lg border border-ink/80 bg-white p-6 pop"
         >
+          <span className="tape -top-3 left-10 -rotate-3"></span>
           <div className="mb-5 flex items-start justify-between gap-4">
-            <h2 className="font-display text-xl font-semibold">
-              {selected.title}
-            </h2>
+            <h2 className="text-xl font-semibold">{selected.title}</h2>
             <button
               type="button"
               onClick={() => setSelected(null)}
-              className="rounded-full border border-line px-3 py-1 text-sm text-muted transition hover:border-coral hover:text-coral-dark"
+              className="rounded-md border border-ink/70 bg-white px-3 py-1 font-hand text-lg leading-tight transition hover:bg-marker"
             >
-              Close
+              close
             </button>
           </div>
           {isPdf(selected) ? (
             <Suspense
               fallback={
-                <p className="py-10 text-center text-sm text-muted">
-                  Loading viewer…
+                <p className="py-10 text-center font-hand text-xl text-pencil">
+                  loading the pages…
                 </p>
               }
             >

@@ -9,25 +9,26 @@ import BaseLayout from "../layouts/BaseLayout.astro";
   <main
     class="mx-auto flex min-h-[60vh] max-w-3xl flex-col justify-center px-6 py-24"
   >
-    <p class="font-display text-6xl font-semibold text-peach">404</p>
-    <h1 class="mt-4 font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-      Nothing in the vault here.
+    <p class="font-hand text-6xl text-accent">404</p>
+    <h1 class="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
+      This page slipped out of the notebook.
     </h1>
-    <p class="mt-4 text-lg text-muted">
-      The page you were looking for does not exist or has moved.
+    <p class="mt-4 text-lg text-pencil">
+      Whatever you were looking for isn't filed here — it may have been moved or
+      renamed.
     </p>
     <div class="mt-8 flex flex-wrap gap-3 text-sm">
       <a
         href="/"
-        class="rounded-full bg-coral px-5 py-2.5 font-semibold text-white shadow-sm transition hover:bg-coral-dark"
+        class="rounded-md border border-ink/80 bg-accent px-5 py-2.5 font-semibold text-white pop-sm transition hover:-translate-y-0.5 hover:bg-accent-dark"
       >
-        Go home
+        back home
       </a>
       <a
         href="/blogs/"
-        class="rounded-full border border-line bg-surface px-5 py-2.5 font-semibold transition hover:border-coral hover:text-coral-dark"
+        class="rounded-md border border-ink/80 bg-white px-5 py-2.5 font-semibold pop-sm transition hover:-translate-y-0.5"
       >
-        Read the blogs
+        read the blogs
       </a>
     </div>
   </main>
