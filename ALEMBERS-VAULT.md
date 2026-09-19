@@ -53,7 +53,7 @@ Global Search: Fast client-side search across blogs, documents, and projects.
 
 [x] Phase 3: Storage & Academic Hub — Integrate Supabase bucket for PDF storage and academic files.
 
-[ ] Phase 4: Deployment & Optimization — Connect repository to Vercel/Cloudflare Pages and test file download speeds.
+[x] Phase 4: Deployment & Optimization — Connect repository to Vercel/Cloudflare Pages and test file download speeds.
 
 🔒 Free-Tier Maintenance Checklist
 
