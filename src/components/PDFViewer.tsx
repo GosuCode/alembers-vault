@@ -30,10 +30,10 @@ export default function PDFViewer({ url, title }: Props) {
   return (
     <div ref={containerRef} className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-4 text-sm">
-        <span className="truncate text-slate-300">{title}</span>
+        <span className="truncate font-medium text-ink">{title}</span>
         <div className="flex shrink-0 items-center gap-3">
           {numPages ? (
-            <span className="text-slate-500">
+            <span className="rounded-full border border-line bg-cream px-2.5 py-0.5 text-xs text-muted">
               {numPages} page{numPages === 1 ? "" : "s"}
             </span>
           ) : null}
@@ -41,7 +41,7 @@ export default function PDFViewer({ url, title }: Props) {
             href={url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-amber-400 transition-colors hover:text-amber-300"
+            className="rounded-full border border-line px-4 py-1.5 text-xs font-semibold text-ink transition hover:border-coral hover:text-coral-dark"
           >
             Open ↗
           </a>
@@ -52,16 +52,14 @@ export default function PDFViewer({ url, title }: Props) {
         file={url}
         onLoadSuccess={(pdf) => setNumPages(pdf.numPages)}
         loading={
-          <p className="py-10 text-center text-sm text-slate-500">
-            Loading PDF…
-          </p>
+          <p className="py-10 text-center text-sm text-muted">Loading PDF…</p>
         }
         error={
-          <p className="py-10 text-center text-sm text-red-400">
+          <p className="py-10 text-center text-sm text-coral-dark">
             Could not load this PDF.
           </p>
         }
-        className="overflow-hidden rounded-lg border border-slate-800"
+        className="overflow-hidden rounded-3xl border border-line"
       >
         {Array.from({ length: numPages ?? 0 }, (_, index) => (
           <Page

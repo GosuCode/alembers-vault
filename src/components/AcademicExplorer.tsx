@@ -26,6 +26,10 @@ function isPdf(resource: AcademicResource): boolean {
   return resource.storage_path.toLowerCase().endsWith(".pdf");
 }
 
+function fileKind(resource: AcademicResource): string {
+  return isPdf(resource) ? "PDF" : "DOCX";
+}
+
 export default function AcademicExplorer() {
   const [resources, setResources] = useState<AcademicResource[]>([]);
   const [status, setStatus] = useState<"loading" | "ready" | "error">(
@@ -103,12 +107,12 @@ export default function AcademicExplorer() {
   }, [resources, query, category, year]);
 
   if (status === "loading") {
-    return <p className="py-12 text-sm text-slate-500">Loading archive…</p>;
+    return <p className="py-12 text-sm text-muted">Loading archive…</p>;
   }
 
   if (status === "error") {
     return (
-      <p className="py-12 text-sm text-red-400">
+      <p className="py-12 text-sm text-coral-dark">
         Could not load the academic archive. Please try again later.
       </p>
     );
@@ -116,7 +120,7 @@ export default function AcademicExplorer() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="grid gap-3 sm:grid-cols-[1fr_auto_auto]">
+      <div className="grid gap-3 sm:grid-cols-[1fr_auto_auto] sm:items-end">
         <SearchBar value={query} onChange={setQuery} />
         <Filter
           label="Category"
@@ -124,25 +128,21 @@ export default function AcademicExplorer() {
           options={categories}
           onChange={setCategory}
         />
-        <Filter
-          label="Year"
-          value={year}
-          options={years}
-          onChange={setYear}
-        />
+        <Filter label="Year" value={year} options={years} onChange={setYear} />
       </div>
 
-      <p className="text-sm text-slate-500">
-        {filtered.length} of {resources.length} resources
+      <p className="text-sm text-muted">
+        Showing <span className="font-semibold text-ink">{filtered.length}</span>{" "}
+        of {resources.length} resources
       </p>
 
       {resources.length === 0 ? (
-        <p className="text-slate-500">
+        <p className="text-muted">
           No materials uploaded yet. Use the upload script to add PDF or DOCX
           files.
         </p>
       ) : filtered.length === 0 ? (
-        <p className="text-slate-500">No resources match your filters.</p>
+        <p className="text-muted">No resources match your filters.</p>
       ) : (
         <ul className="flex flex-col gap-3">
           {filtered.map((resource) => (
@@ -150,26 +150,42 @@ export default function AcademicExplorer() {
               <button
                 type="button"
                 onClick={() => setSelected(resource)}
-                className="w-full rounded-xl border border-slate-800 bg-slate-900/40 p-5 text-left transition-colors hover:border-slate-700"
+                className="w-full rounded-3xl border border-line bg-surface p-6 text-left shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md"
               >
-                <div className="flex items-start justify-between gap-4">
-                  <h2 className="font-semibold tracking-tight">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <h2 className="font-display text-lg font-semibold leading-snug">
                     {resource.title}
                   </h2>
-                  <span className="shrink-0 rounded-full border border-slate-700 px-2.5 py-0.5 text-xs text-slate-400">
+                  <span className="shrink-0 rounded-full bg-peach/50 px-3 py-1 text-xs font-semibold text-coral-dark">
                     {categoryLabel(resource.category)}
                   </span>
                 </div>
                 {resource.description ? (
-                  <p className="mt-2 text-sm text-slate-400">
+                  <p className="mt-2 text-sm text-muted">
                     {resource.description}
                   </p>
                 ) : null}
-                <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs text-slate-500">
-                  {resource.course ? <span>{resource.course}</span> : null}
-                  {resource.year ? <span>{resource.year}</span> : null}
+                <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-muted">
+                  <span className="rounded-full border border-line bg-cream px-2.5 py-0.5 font-medium">
+                    {fileKind(resource)}
+                  </span>
+                  {resource.course ? (
+                    <span className="rounded-full border border-line bg-cream px-2.5 py-0.5">
+                      {resource.course}
+                    </span>
+                  ) : null}
+                  {resource.year ? (
+                    <span className="rounded-full border border-line bg-cream px-2.5 py-0.5">
+                      {resource.year}
+                    </span>
+                  ) : null}
                   {resource.tags.map((tag) => (
-                    <span key={tag}>#{tag}</span>
+                    <span
+                      key={tag}
+                      className="rounded-full border border-line bg-cream px-2.5 py-0.5"
+                    >
+                      #{tag}
+                    </span>
                   ))}
                 </div>
               </button>
@@ -179,13 +195,18 @@ export default function AcademicExplorer() {
       )}
 
       {selected ? (
-        <section className="rounded-xl border border-slate-800 bg-slate-900/40 p-5">
-          <div className="mb-4 flex items-start justify-between gap-4">
-            <h2 className="font-semibold tracking-tight">{selected.title}</h2>
+        <section
+          id="viewer"
+          className="rounded-3xl border border-line bg-surface p-6 shadow-sm"
+        >
+          <div className="mb-5 flex items-start justify-between gap-4">
+            <h2 className="font-display text-xl font-semibold">
+              {selected.title}
+            </h2>
             <button
               type="button"
               onClick={() => setSelected(null)}
-              className="text-sm text-slate-400 transition-colors hover:text-white"
+              className="rounded-full border border-line px-3 py-1 text-sm text-muted transition hover:border-coral hover:text-coral-dark"
             >
               Close
             </button>
@@ -193,7 +214,7 @@ export default function AcademicExplorer() {
           {isPdf(selected) ? (
             <Suspense
               fallback={
-                <p className="py-10 text-center text-sm text-slate-500">
+                <p className="py-10 text-center text-sm text-muted">
                   Loading viewer…
                 </p>
               }

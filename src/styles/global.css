@@ -1,2 +1,40 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
+
+@theme {
+  --font-sans: "Nunito", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: "Fraunces", ui-serif, Georgia, serif;
+
+  --color-cream: #fffaf4;
+  --color-surface: #ffffff;
+  --color-ink: #2b2430;
+  --color-muted: #7c7280;
+  --color-line: #f1e7dd;
+
+  --color-coral: #ff7a59;
+  --color-coral-dark: #e85c38;
+  --color-peach: #ffd9c7;
+  --color-mint: #a7e3cd;
+  --color-lilac: #cdbcef;
+  --color-butter: #ffe6a7;
+}
+
+@layer base {
+  body {
+    @apply bg-cream text-ink font-sans antialiased;
+  }
+
+  ::selection {
+    background: var(--color-peach);
+  }
+}
+
+.prose {
+  --tw-prose-links: var(--color-coral-dark);
+  --tw-prose-headings: var(--color-ink);
+  --tw-prose-body: #4c4552;
+  --tw-prose-bullets: var(--color-coral);
+  --tw-prose-quotes: var(--color-ink);
+  --tw-prose-quote-borders: var(--color-peach);
+  --tw-prose-code: var(--color-coral-dark);
+}

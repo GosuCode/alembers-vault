@@ -1,80 +1,119 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import BlogCard from "../components/BlogCard.astro";
 import ProjectCard from "../components/ProjectCard.astro";
 import { getCollection } from "astro:content";
-import { formatDate } from "../lib/format";
 
-const posts = (await getCollection("blog", ({ data }) => !data.draft))
-  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
-  .slice(0, 3);
+const posts = (await getCollection("blog", ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+const projects = (await getCollection("projects")).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
 
-const projects = (await getCollection("projects"))
-  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
-  .slice(0, 2);
+const latestPosts = posts.slice(0, 3);
+const featuredProjects = projects.slice(0, 2);
+
+const stats = [
+  { label: "Blog posts", value: posts.length },
+  { label: "Projects", value: projects.length },
+  { label: "Academic files", value: "PDF · DOCX" },
+];
 ---
 
 <BaseLayout>
-  <main class="mx-auto max-w-3xl px-6 py-24">
-    <p class="text-sm font-medium uppercase tracking-widest text-amber-400">
-      Alember's Vault
-    </p>
-    <h1 class="mt-4 text-4xl font-bold tracking-tight sm:text-5xl">
-      Tech blogs, academic papers, and project showcases.
-    </h1>
-    <p class="mt-6 text-lg text-slate-400">
-      A personal full-stack archive. Blogs, past papers, project PDFs, and
-      GitHub-backed showcases — all in one place.
-    </p>
+  <main class="mx-auto max-w-5xl px-6">
+    <section class="relative overflow-hidden py-16 sm:py-24">
+      <div
+        class="pointer-events-none absolute -right-16 -top-24 h-72 w-72 rounded-full bg-peach/60 blur-3xl"
+      >
+      </div>
+      <div
+        class="pointer-events-none absolute -left-24 top-24 h-64 w-64 rounded-full bg-lilac/40 blur-3xl"
+      >
+      </div>
 
-    <section class="mt-20">
-      <div class="flex items-baseline justify-between">
-        <h2 class="text-xl font-semibold tracking-tight">Latest blogs</h2>
+      <div class="relative max-w-2xl">
+        <p
+          class="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3 py-1 text-xs font-medium text-muted shadow-sm"
+        >
+          Personal archive
+        </p>
+        <h1
+          class="mt-6 font-display text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl md:text-6xl"
+        >
+          A cozy corner for <span class="text-coral">blogs</span>, papers, and
+          projects.
+        </h1>
+        <p class="mt-6 text-lg text-muted">
+          Past papers and PDFs you can preview in the browser, write-ups of
+          things I build, and notes from the journey.
+        </p>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <a
+            href="/blogs/"
+            class="rounded-full bg-coral px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-coral-dark"
+          >
+            Browse blogs
+          </a>
+          <a
+            href="/academic/"
+            class="rounded-full border border-line bg-surface px-5 py-2.5 text-sm font-semibold transition hover:border-coral hover:text-coral-dark"
+          >
+            Explore the archive
+          </a>
+        </div>
+      </div>
+
+      <dl class="mt-14 grid gap-3 sm:grid-cols-3">
+        {
+          stats.map((stat) => (
+            <div class="rounded-3xl border border-line bg-surface/70 p-5 shadow-sm">
+              <dt class="text-xs uppercase tracking-wide text-muted">
+                {stat.label}
+              </dt>
+              <dd class="mt-1 font-display text-2xl font-semibold">
+                {stat.value}
+              </dd>
+            </div>
+          ))
+        }
+      </dl>
+    </section>
+
+    <section class="mt-8">
+      <div class="flex items-end justify-between gap-4">
+        <h2 class="font-display text-2xl font-semibold tracking-tight">
+          Latest blogs
+        </h2>
         <a
           href="/blogs/"
-          class="text-sm text-amber-400 transition-colors hover:text-amber-300"
+          class="text-sm font-medium text-coral-dark transition hover:text-coral"
         >
           View all →
         </a>
       </div>
 
-      <ul class="mt-6 flex flex-col gap-6">
-        {
-          posts.map((post) => (
-            <li>
-              <h3 class="font-medium">
-                <a
-                  href={`/blogs/${post.id}/`}
-                  class="transition-colors hover:text-amber-400"
-                >
-                  {post.data.title}
-                </a>
-              </h3>
-              <p class="mt-1 text-sm text-slate-400">{post.data.description}</p>
-              <time
-                datetime={post.data.pubDate.toISOString()}
-                class="mt-2 block text-xs text-slate-500"
-              >
-                {formatDate(post.data.pubDate)}
-              </time>
-            </li>
-          ))
-        }
-      </ul>
+      <div class="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {latestPosts.map((post) => <BlogCard post={post} />)}
+      </div>
     </section>
 
     <section class="mt-20">
-      <div class="flex items-baseline justify-between">
-        <h2 class="text-xl font-semibold tracking-tight">Projects</h2>
+      <div class="flex items-end justify-between gap-4">
+        <h2 class="font-display text-2xl font-semibold tracking-tight">
+          Projects
+        </h2>
         <a
           href="/projects/"
-          class="text-sm text-amber-400 transition-colors hover:text-amber-300"
+          class="text-sm font-medium text-coral-dark transition hover:text-coral"
         >
           View all →
         </a>
       </div>
 
       <div class="mt-6 grid gap-6 sm:grid-cols-2">
-        {projects.map((project) => <ProjectCard project={project} />)}
+        {featuredProjects.map((project) => <ProjectCard project={project} />)}
       </div>
     </section>
   </main>

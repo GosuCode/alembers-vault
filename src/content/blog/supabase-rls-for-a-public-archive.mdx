@@ -1,0 +1,41 @@
+---
+title: "Supabase RLS for a Public Archive"
+description: "Read-only to the world, writable only with the service role — a small, honest policy set."
+pubDate: 2026-08-28
+tags: ["supabase", "security", "postgres"]
+heroImage: "./supabase-rls.hero.png"
+heroImageAlt: "A mint gradient banner"
+---
+
+Row Level Security is where a public archive becomes safe by construction. The
+rule is simple: the world can read, nobody anonymous can write.
+
+## The table
+
+```sql
+alter table public.academic_resources enable row level security;
+
+create policy "academic resources are publicly readable"
+  on public.academic_resources
+  for select
+  to anon, authenticated
+  using (true);
+```
+
+No insert, update, or delete policy exists for `anon` — so those paths fail
+closed, not open.
+
+## The bucket
+
+Files live in a public bucket so the browser can preview them directly.
+Writes only happen through a script holding the secret key, run from my
+machine.
+
+## Verify, don't assume
+
+An anonymous insert should fail. If it succeeds, the policy is wrong:
+
+```sh
+curl -X POST "$URL/rest/v1/academic_resources" ...
+# 401: new row violates row-level security policy
+```
