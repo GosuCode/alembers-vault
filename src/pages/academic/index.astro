@@ -1,26 +1,46 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import AcademicExplorer from "../../components/AcademicExplorer.tsx";
+import { fetchAcademicResources, slugFor } from "../../lib/academic";
+
+// Fetched at build time so the paper list is rendered into the HTML (crawlable),
+// then the island hydrates for search/filter/preview.
+const resources = await fetchAcademicResources();
+
+const itemListJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: "Tribhuvan University BCA Past Question Papers",
+  numberOfItems: resources.length,
+  itemListElement: resources.map((resource, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    name: resource.title,
+    url: new URL(`/academic/${slugFor(resource)}/`, Astro.site).href,
+  })),
+};
 ---
 
 <BaseLayout
-  title="Academic · Alember's Vault"
-  description="Past papers, project PDFs, and notes with in-browser previews."
+  title="BCA Past Question Papers — Tribhuvan University | Alember's Vault"
+  description="Browse, preview, and download Tribhuvan University BCA past question papers by semester and subject — Operating System, DBMS, C Programming, Java, Networking, and more."
+  jsonLd={itemListJsonLd}
 >
   <main class="mx-auto max-w-5xl px-6 py-14">
     <header class="max-w-2xl">
       <p class="font-hand text-2xl text-accent">the filing cabinet</p>
       <h1 class="mt-1 text-4xl font-semibold tracking-tight sm:text-5xl">
-        Academic Archive
+        BCA Past Question Papers
       </h1>
       <p class="mt-4 text-lg text-pencil">
-        Past papers, project reports, and notes — search, filter, and read them
-        right here.
+        Tribhuvan University BCA past question papers, grouped by semester.
+        Search or filter by subject, then preview any paper right in the browser
+        — no download required.
       </p>
     </header>
 
     <div class="mt-12">
-      <AcademicExplorer client:only="react" />
+      <AcademicExplorer client:load initialResources={resources} />
     </div>
   </main>
 </BaseLayout>

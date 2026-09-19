@@ -75,6 +75,60 @@ compression is applied.
 > DOCX previews are rendered by Microsoft's online viewer, which fetches the
 > file from its public Supabase URL. The PDF path never leaves the browser.
 
+## Search engine optimization (SEO)
+
+The archive is built to be indexed:
+
+- **Build-time rendering.** `/academic/` fetches the papers at build time and
+  server-renders the full list into the HTML (`client:load` island hydrates on
+  top). Crawlers see every paper title/course/year without running JavaScript.
+  `src/lib/academic.ts` does the fetch and degrades to an empty list if
+  Supabase is unreachable, so the build never fails.
+- **One page per paper.** `/academic/<slug>/` (e.g. `/academic/cacs251/`) with a
+  keyworded `<title>` ("Operating System Past Question Paper 2023 — BCA 4th
+  Semester (CACS251) | Tribhuvan University"), meta description, and internal
+  links to sibling papers.
+- **Structured data.** JSON-LD `ItemList` on the index and `LearningResource` +
+  `BreadcrumbList` per paper, plus canonical URLs and Open Graph tags
+  (`BaseLayout`).
+- **Sitemap.** `@astrojs/sitemap` includes every generated paper page in
+  `/sitemap-index.xml`; `robots.txt` points at it.
+
+### Important: rebuild after uploading
+
+New uploads appear immediately in the UI (the island queries Supabase live), but
+the **static HTML and per-paper pages only update on the next build/deploy**.
+Push any commit (or trigger a redeploy) to regenerate them for crawlers.
+
+### OCR the scans
+
+The papers are scanned images with no text, so searches can't match their
+contents. OCR fills `academic_resources.content_text`, which each paper page
+renders as a "Paper text" section:
+
+```sh
+sudo apt-get install -y tesseract-ocr ghostscript
+pnpm ocr                 # skips papers that already have text
+pnpm ocr --force         # redo all
+pnpm ocr --limit 5       # try a few first
+```
+
+Then rebuild/redeploy so the text lands in the HTML.
+
+### Google Search Console
+
+1. Add a property for `vault.shreeshalember.com.np` (Domain property; verify with
+   the DNS TXT record Cloudflare adds).
+2. Submit `https://vault.shreeshalember.com.np/sitemap-index.xml`.
+3. Use **URL Inspection → Request indexing** on your most important pages.
+4. Check **Pages** for indexing status and **Enhancements** for rich-result
+   errors.
+
+Reality check: expect long-tail queries ("BCA 4th semester operating system
+question paper 2023") to rank first, not broad ones ("BCA past question paper"),
+which established sites own. Ranking takes weeks-to-months and depends heavily
+on backlinks — nothing here can guarantee position #1.
+
 ## Blog images
 
 Posts support images three ways:

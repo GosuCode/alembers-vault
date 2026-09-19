@@ -17,6 +17,7 @@ export type Database = {
       academic_resources: {
         Row: {
           category: string
+          content_text: string | null
           course: string | null
           created_at: string
           description: string | null
@@ -31,6 +32,7 @@ export type Database = {
         }
         Insert: {
           category?: string
+          content_text?: string | null
           course?: string | null
           created_at?: string
           description?: string | null
@@ -45,6 +47,7 @@ export type Database = {
         }
         Update: {
           category?: string
+          content_text?: string | null
           course?: string | null
           created_at?: string
           description?: string | null

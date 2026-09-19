@@ -13,6 +13,7 @@
     "check": "astro check",
     "deploy": "astro build && wrangler deploy",
     "upload": "node --env-file=.env scripts/upload-academic.mjs",
+    "ocr": "node --env-file=.env scripts/ocr-papers.mjs",
     "astro": "astro"
   },
   "dependencies": {

@@ -1,0 +1,174 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocumentViewer from "../../components/DocumentViewer.tsx";
+import {
+  fetchAcademicResources,
+  metaDescription,
+  ordinal,
+  pageTitle,
+  slugFor,
+} from "../../lib/academic";
+import { academicFileUrl, type AcademicResource } from "../../lib/supabase";
+
+export async function getStaticPaths() {
+  const resources = await fetchAcademicResources();
+  return resources.map((resource) => ({
+    params: { slug: slugFor(resource) },
+    props: {
+      resource,
+      siblings: resources.filter(
+        (item) =>
+          item.semester === resource.semester &&
+          item.id !== resource.id &&
+          item.category === resource.category,
+      ),
+    },
+  }));
+}
+
+interface Props {
+  resource: AcademicResource;
+  siblings: AcademicResource[];
+}
+
+const { resource, siblings } = Astro.props;
+const fileUrl = academicFileUrl(resource.storage_path);
+const isPdf =
+  resource.mime_type === "application/pdf" ||
+  resource.storage_path.toLowerCase().endsWith(".pdf");
+
+const semesterText = resource.semester
+  ? `${ordinal(resource.semester)} Semester`
+  : null;
+
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+
+const jsonLd = [
+  {
+    "@context": "https://schema.org",
+    "@type": "LearningResource",
+    name: pageTitle(resource),
+    description: metaDescription(resource),
+    learningResourceType: "Past question paper",
+    educationalLevel: "Undergraduate",
+    about: resource.title,
+    inLanguage: "en",
+    isAccessibleForFree: true,
+    url: canonical,
+    encodingFormat: resource.mime_type ?? "application/pdf",
+    provider: {
+      "@type": "CollegeOrUniversity",
+      name: "Tribhuvan University",
+    },
+    ...(resource.course ? { courseCode: resource.course } : {}),
+    ...(resource.year ? { datePublished: String(resource.year) } : {}),
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: new URL("/", Astro.site).href,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Academic",
+        item: new URL("/academic/", Astro.site).href,
+      },
+      { "@type": "ListItem", position: 3, name: resource.title, item: canonical },
+    ],
+  },
+];
+---
+
+<BaseLayout
+  title={pageTitle(resource)}
+  description={metaDescription(resource)}
+  jsonLd={jsonLd}
+>
+  <main class="mx-auto max-w-4xl px-6 py-12">
+    <nav class="font-hand text-lg text-pencil" aria-label="Breadcrumb">
+      <a href="/academic/" class="text-accent transition hover:text-accent-dark">
+        ← all papers
+      </a>
+      {semesterText && <span> · {semesterText}</span>}
+    </nav>
+
+    <header class="mt-6">
+      <h1
+        class="text-3xl font-semibold leading-tight tracking-tight sm:text-4xl"
+      >
+        {resource.title}
+      </h1>
+      <p class="mt-4 text-lg text-pencil">
+        Tribhuvan University BCA
+        {semesterText && ` · ${semesterText}`}
+        {resource.course && ` · ${resource.course}`}
+        {resource.year && ` · ${resource.year}`}
+      </p>
+      <div class="mt-5 flex flex-wrap gap-3">
+        <a
+          href={fileUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="rounded-md border border-ink/80 bg-accent px-5 py-2 text-sm font-semibold text-white pop-sm transition hover:-translate-y-0.5 hover:bg-accent-dark"
+        >
+          Open {isPdf ? "PDF" : "document"} ↗
+        </a>
+        <a
+          href={fileUrl}
+          download
+          class="rounded-md border border-ink/80 bg-white px-5 py-2 text-sm font-semibold pop-sm transition hover:-translate-y-0.5"
+        >
+          Download
+        </a>
+      </div>
+    </header>
+
+    <section class="mt-10">
+      <DocumentViewer
+        client:only="react"
+        url={fileUrl}
+        title={resource.title}
+        isPdf={isPdf}
+      />
+    </section>
+
+    {
+      resource.content_text && (
+        <section class="mt-12">
+          <h2 class="font-hand text-3xl sketch-underline">Paper text</h2>
+          <div class="prose mt-5 max-w-none whitespace-pre-line">
+            {resource.content_text}
+          </div>
+        </section>
+      )
+    }
+
+    {
+      siblings.length > 0 && (
+        <section class="mt-14 border-t border-dashed border-line pt-8">
+          <h2 class="font-hand text-3xl sketch-underline">
+            More {semesterText ?? "papers"}
+          </h2>
+          <ul class="mt-5 grid gap-3 sm:grid-cols-2">
+            {siblings.map((item) => (
+              <li>
+                <a
+                  href={`/academic/${slugFor(item)}/`}
+                  class="block rounded-lg border border-ink/60 bg-white px-4 py-3 text-sm transition hover:-translate-y-0.5 hover:bg-marker"
+                >
+                  {item.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+  </main>
+</BaseLayout>

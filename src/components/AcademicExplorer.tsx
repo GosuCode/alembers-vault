@@ -1,14 +1,9 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Filter from "./Filter";
 import SearchBar from "./SearchBar";
-import OfficeViewer from "./OfficeViewer";
-import {
-  academicFileUrl,
-  supabase,
-  type AcademicResource,
-} from "../lib/supabase";
-
-const PDFViewer = lazy(() => import("./PDFViewer"));
+import DocumentViewer from "./DocumentViewer";
+import { getSupabase, academicFileUrl, type AcademicResource } from "../lib/supabase";
+import { slugFor } from "../lib/academic";
 
 const CATEGORY_LABELS: Record<string, string> = {
   "past-paper": "Past paper",
@@ -34,10 +29,17 @@ function semesterLabel(semester: number | null): string {
   return semester ? `Semester ${semester}` : "Unsorted";
 }
 
-export default function AcademicExplorer() {
-  const [resources, setResources] = useState<AcademicResource[]>([]);
+interface Props {
+  initialResources?: AcademicResource[];
+}
+
+export default function AcademicExplorer({
+  initialResources = [],
+}: Props) {
+  const [resources, setResources] =
+    useState<AcademicResource[]>(initialResources);
   const [status, setStatus] = useState<"loading" | "ready" | "error">(
-    "loading",
+    initialResources.length > 0 ? "ready" : "loading",
   );
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("all");
@@ -45,26 +47,30 @@ export default function AcademicExplorer() {
   const [year, setYear] = useState("all");
   const [selected, setSelected] = useState<AcademicResource | null>(null);
 
+  // Refresh from Supabase on load so uploads show without a rebuild.
   useEffect(() => {
     let active = true;
-
-    supabase
-      .from("academic_resources")
-      .select("*")
-      .order("semester", { ascending: true, nullsFirst: false })
-      .order("year", { ascending: false, nullsFirst: false })
-      .order("title", { ascending: true })
-      .then(({ data, error }) => {
-        if (!active) return;
-        if (error) {
-          console.error("Failed to load academic resources", error);
-          setStatus("error");
-          return;
-        }
-        setResources(data ?? []);
-        setStatus("ready");
-      });
-
+    try {
+      getSupabase()
+        .from("academic_resources")
+        .select("*")
+        .order("semester", { ascending: true, nullsFirst: false })
+        .order("year", { ascending: false, nullsFirst: false })
+        .order("title", { ascending: true })
+        .then(({ data, error }) => {
+          if (!active) return;
+          if (error) {
+            console.error("Failed to load academic resources", error);
+            setStatus((current) => (current === "ready" ? current : "error"));
+            return;
+          }
+          setResources(data ?? []);
+          setStatus("ready");
+        });
+    } catch (error) {
+      console.error(error);
+      if (active) setStatus((current) => (current === "ready" ? current : "error"));
+    }
     return () => {
       active = false;
     };
@@ -105,7 +111,10 @@ export default function AcademicExplorer() {
     ).sort((a, b) => a - b);
     return [
       { value: "all", label: "All semesters" },
-      ...unique.map((value) => ({ value: String(value), label: `Semester ${value}` })),
+      ...unique.map((value) => ({
+        value: String(value),
+        label: `Semester ${value}`,
+      })),
     ];
   }, [resources]);
 
@@ -217,11 +226,13 @@ export default function AcademicExplorer() {
 
               <ul className="mt-5 grid gap-4 sm:grid-cols-2">
                 {items.map((resource) => (
-                  <li key={resource.id}>
-                    <button
-                      type="button"
-                      onClick={() => setSelected(resource)}
-                      className="relative flex h-full w-full flex-col rounded-lg border border-ink/80 bg-white p-5 text-left pop-sm transition duration-200 hover:-translate-y-1"
+                  <li
+                    key={resource.id}
+                    className="relative"
+                  >
+                    <a
+                      href={`/academic/${slugFor(resource)}/`}
+                      className="relative flex h-full flex-col rounded-lg border border-ink/80 bg-white p-5 pr-20 pop-sm transition duration-200 hover:-translate-y-1"
                     >
                       <h3 className="text-base font-semibold leading-snug">
                         {resource.title}
@@ -245,21 +256,18 @@ export default function AcademicExplorer() {
                             {resource.year}
                           </span>
                         ) : null}
-                        {resource.tags
-                          .filter((tag) => !/^sem-\d+$/.test(tag))
-                          .slice(0, 2)
-                          .map((tag) => (
-                            <span
-                              key={tag}
-                              className="rounded-full border border-dashed border-pencil/50 px-2.5 py-0.5 leading-tight"
-                            >
-                              #{tag}
-                            </span>
-                          ))}
                       </div>
-                      <span className="mt-4 font-hand text-lg text-accent">
-                        view paper →
+                      <span className="mt-3 font-hand text-lg text-accent">
+                        open paper →
                       </span>
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => setSelected(resource)}
+                      aria-label={`Quick preview: ${resource.title}`}
+                      className="absolute right-3 top-3 z-10 rounded-md border border-ink/70 bg-white px-2.5 py-1 font-hand text-base leading-tight transition hover:bg-marker"
+                    >
+                      preview
                     </button>
                   </li>
                 ))}
@@ -291,34 +299,28 @@ export default function AcademicExplorer() {
                   {selected.year ? ` · ${selected.year}` : ""}
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => setSelected(null)}
-                className="shrink-0 rounded-md border border-ink/70 bg-white px-3 py-1 font-hand text-lg leading-tight transition hover:bg-marker"
-              >
-                close ✕
-              </button>
+              <div className="flex shrink-0 items-center gap-2">
+                <a
+                  href={`/academic/${slugFor(selected)}/`}
+                  className="rounded-md border border-ink/70 bg-white px-3 py-1 font-hand text-lg leading-tight transition hover:bg-marker"
+                >
+                  details ↗
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setSelected(null)}
+                  className="rounded-md border border-ink/70 bg-white px-3 py-1 font-hand text-lg leading-tight transition hover:bg-marker"
+                >
+                  close ✕
+                </button>
+              </div>
             </div>
 
-            {isPdf(selected) ? (
-              <Suspense
-                fallback={
-                  <p className="py-10 text-center font-hand text-xl text-pencil">
-                    loading the pages…
-                  </p>
-                }
-              >
-                <PDFViewer
-                  url={academicFileUrl(selected.storage_path)}
-                  title={selected.title}
-                />
-              </Suspense>
-            ) : (
-              <OfficeViewer
-                url={academicFileUrl(selected.storage_path)}
-                title={selected.title}
-              />
-            )}
+            <DocumentViewer
+              url={academicFileUrl(selected.storage_path)}
+              title={selected.title}
+              isPdf={isPdf(selected)}
+            />
           </div>
         </div>
       ) : null}
