@@ -61,14 +61,14 @@ export default function PDFViewer({ url, title }: Props) {
             Could not load this PDF.
           </p>
         }
-        className="overflow-hidden rounded-lg border border-ink/60"
+        className="flex flex-col items-center gap-3 overflow-hidden rounded-lg border border-ink/60"
       >
         {Array.from({ length: numPages ?? 0 }, (_, index) => (
           <Page
             key={index + 1}
             pageNumber={index + 1}
             width={width}
-            className="bg-white"
+            className="mx-auto bg-white shadow-sm"
           />
         ))}
       </Document>
