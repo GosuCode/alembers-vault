@@ -3,7 +3,7 @@
 Personal full-stack web archive for tech blogs, academic materials (past papers,
 project PDFs), and software project showcases with GitHub integration.
 
-See [`ALEMBERS-VAULT.md`](../ALEMBERS-VAULT.md) for scope, roadmap, and the
+See [`ALEMBERS-VAULT.md`](./ALEMBERS-VAULT.md) for scope, roadmap, and the
 free-tier checklist.
 
 ## Stack
