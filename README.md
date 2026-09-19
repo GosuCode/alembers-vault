@@ -21,18 +21,35 @@ pnpm install
 pnpm dev            # dev server at localhost:4321
 pnpm build          # production build to ./dist/
 pnpm preview        # preview the build
-pnpm astro check    # type/content diagnostics
+pnpm check          # type/content diagnostics
 ```
 
 ## Environment
 
 Copy `.env.example` to `.env` and fill in the Supabase values. Only the
-`PUBLIC_`-prefixed keys are exposed to the client; keep the service-role key
+`PUBLIC_`-prefixed values are exposed to the client; the secret key is
 server-only (used by the upload script).
 
 - `PUBLIC_SUPABASE_URL` — `https://bunlkimihykrtxitgwmg.supabase.co`
 - `PUBLIC_SUPABASE_ANON_KEY` — publishable key (safe for the browser)
-- `SUPABASE_SERVICE_ROLE_KEY` — server-only, required for uploads
+- `SUPABASE_SERVICE_ROLE_KEY` — secret key (server-only, required for uploads)
+
+### Where to get the keys
+
+Dashboard → **Project Settings → API Keys**:
+<https://supabase.com/dashboard/project/bunlkimihykrtxitgwmg/settings/api-keys>
+
+1. **Publishable key** — copy the `sb_publishable_...` value into
+   `PUBLIC_SUPABASE_ANON_KEY`. Safe to ship to browsers.
+2. **Secret key** — click **Create new secret key**, copy the `sb_secret_...`
+   value into `SUPABASE_SERVICE_ROLE_KEY`. This bypasses RLS, so it must never
+   reach client code or git. (The legacy `service_role` JWT under the
+   **Legacy API keys** tab works too, but a secret key is the current
+   recommendation.)
+
+`.env` is gitignored. Set the two `PUBLIC_` vars in the hosting dashboard when
+deploying; keep the secret key out of hosting env vars unless a server-side
+feature actually needs it. If a secret key leaks, revoke it on the same page.
 
 ## Academic archive
 
