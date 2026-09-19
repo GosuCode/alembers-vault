@@ -1,0 +1,29 @@
+---
+title: "Welcome to Alember's Vault"
+description: "Why I built a personal archive for blogs, papers, and projects — and what's coming next."
+pubDate: 2026-09-19
+tags: ["meta", "astro"]
+---
+
+Welcome to **Alember's Vault** — a single home for the things I build, study,
+and write about.
+
+## What lives here
+
+- **Tech blogs** — notes from projects, tooling, and things I had to learn the
+  hard way.
+- **Academic archive** — past papers and project PDFs, browsable and
+  previewable in the browser.
+- **Project showcase** — write-ups with repository and live-demo links.
+
+## Why not a pile of folders?
+
+Because a pile of folders is where notes go to die. This site is content-first:
+pages are pre-rendered at build time, so it stays fast and cheap to host.
+
+```ts
+const vault = ["blogs", "academic", "projects"];
+console.log(vault.join(" · "));
+```
+
+More soon.

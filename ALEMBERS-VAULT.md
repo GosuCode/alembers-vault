@@ -49,7 +49,7 @@ Global Search: Fast client-side search across blogs, documents, and projects.
 
 [x] Phase 1: Foundation — Setup Astro + Tailwind project and push to GitHub.
 
-[ ] Phase 2: Content Engines — Build MDX blog engine and static project pages.
+[x] Phase 2: Content Engines — Build MDX blog engine and static project pages.
 
 [ ] Phase 3: Storage & Academic Hub — Integrate Supabase bucket for PDF storage and academic files.
 

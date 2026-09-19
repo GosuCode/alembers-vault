@@ -1,0 +1,22 @@
+---
+title: "Markdown Notes CLI"
+description: "A tiny command-line tool for turning a folder of Markdown notes into a searchable static index."
+pubDate: 2026-08-30
+tags: ["typescript", "cli"]
+---
+
+A small experiment in local-first tooling: point it at a directory of Markdown
+files and it emits a single static HTML index with client-side search.
+
+## What it does
+
+1. Walks a notes directory for `.md` files.
+2. Extracts titles and headings.
+3. Emits a static index with a tiny search script.
+
+```bash
+notes build ./vault --out ./dist
+```
+
+The whole thing stays under a few hundred lines of TypeScript, with no runtime
+dependencies for the generated output.

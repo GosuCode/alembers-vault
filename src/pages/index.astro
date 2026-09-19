@@ -1,9 +1,20 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import ProjectCard from "../components/ProjectCard.astro";
+import { getCollection } from "astro:content";
+import { formatDate } from "../lib/format";
+
+const posts = (await getCollection("blog", ({ data }) => !data.draft))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, 3);
+
+const projects = (await getCollection("projects"))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, 2);
 ---
 
 <BaseLayout>
-  <main class="mx-auto flex min-h-screen max-w-3xl flex-col justify-center px-6 py-24">
+  <main class="mx-auto max-w-3xl px-6 py-24">
     <p class="text-sm font-medium uppercase tracking-widest text-amber-400">
       Alember's Vault
     </p>
@@ -14,5 +25,57 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       A personal full-stack archive. Blogs, past papers, project PDFs, and
       GitHub-backed showcases — all in one place.
     </p>
+
+    <section class="mt-20">
+      <div class="flex items-baseline justify-between">
+        <h2 class="text-xl font-semibold tracking-tight">Latest blogs</h2>
+        <a
+          href="/blogs/"
+          class="text-sm text-amber-400 transition-colors hover:text-amber-300"
+        >
+          View all →
+        </a>
+      </div>
+
+      <ul class="mt-6 flex flex-col gap-6">
+        {
+          posts.map((post) => (
+            <li>
+              <h3 class="font-medium">
+                <a
+                  href={`/blogs/${post.id}/`}
+                  class="transition-colors hover:text-amber-400"
+                >
+                  {post.data.title}
+                </a>
+              </h3>
+              <p class="mt-1 text-sm text-slate-400">{post.data.description}</p>
+              <time
+                datetime={post.data.pubDate.toISOString()}
+                class="mt-2 block text-xs text-slate-500"
+              >
+                {formatDate(post.data.pubDate)}
+              </time>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section class="mt-20">
+      <div class="flex items-baseline justify-between">
+        <h2 class="text-xl font-semibold tracking-tight">Projects</h2>
+        <a
+          href="/projects/"
+          class="text-sm text-amber-400 transition-colors hover:text-amber-300"
+        >
+          View all →
+        </a>
+      </div>
+
+      <div class="mt-6 grid gap-6 sm:grid-cols-2">
+        {projects.map((project) => <ProjectCard project={project} />)}
+      </div>
+    </section>
   </main>
 </BaseLayout>

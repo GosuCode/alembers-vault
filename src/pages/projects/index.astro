@@ -1,0 +1,31 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ProjectCard from "../../components/ProjectCard.astro";
+import { getCollection } from "astro:content";
+
+const projects = (await getCollection("projects")).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+---
+
+<BaseLayout
+  title="Projects · Alember's Vault"
+  description="Software projects with write-ups, repositories, and live demos."
+>
+  <main class="mx-auto max-w-3xl px-6 py-16">
+    <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">Projects</h1>
+    <p class="mt-4 text-slate-400">
+      Software projects with write-ups, repositories, and live demos.
+    </p>
+
+    <div class="mt-12 grid gap-6 sm:grid-cols-2">
+      {projects.map((project) => <ProjectCard project={project} />)}
+    </div>
+
+    {
+      projects.length === 0 && (
+        <p class="mt-12 text-slate-500">No projects yet. Check back soon.</p>
+      )
+    }
+  </main>
+</BaseLayout>
