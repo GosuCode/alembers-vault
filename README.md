@@ -80,11 +80,15 @@ In the Cloudflare dashboard → **Workers & Pages → Create → Workers → Con
 to Git**:
 
 - Build command: `pnpm build`
-- Deploy command: `pnpm deploy` (runs `astro build && wrangler deploy`), or
-  `npx wrangler deploy` if you left the build step separate
-- **Environment variables** (Production and Preview):
+- Deploy command: `npx wrangler deploy` (the default), or `pnpm deploy`
+- **Build variables and secrets** (**Settings → Build**):
   - `PUBLIC_SUPABASE_URL` = `https://bunlkimihykrtxitgwmg.supabase.co`
   - `PUBLIC_SUPABASE_ANON_KEY` = your `sb_publishable_...` key
+
+  Astro inlines `PUBLIC_*` at build time, so these must be *build* variables,
+  not runtime ones. A Worker with only static assets cannot have runtime
+  variables at all — and does not need them, since the site reads nothing at
+  runtime except the compiled-in values.
 
   Do **not** add `SUPABASE_SERVICE_ROLE_KEY` — the deployed site is read-only
   and never needs it.
