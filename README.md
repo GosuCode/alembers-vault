@@ -68,29 +68,42 @@ pnpm upload ./papers/ds-final-2024.pdf \
 The resource appears on `/academic/` with client-side search, category/year
 filters, and an in-browser PDF preview (react-pdf).
 
-## Deployment (Cloudflare Pages)
+## Deployment (Cloudflare)
 
-Static output — no adapter needed. In the Cloudflare dashboard:
+Static output — **no Astro adapter needed**. `wrangler.jsonc` declares the
+`./dist` folder as static assets, so Wrangler does not auto-configure the
+`@astrojs/cloudflare` adapter (which is only for SSR).
 
-1. **Workers & Pages → Create → Pages → Connect to Git**, pick
-   `GosuCode/alembers-vault`.
-2. Build settings:
-   - Framework preset: **Astro**
-   - Build command: `pnpm build`
-   - Build output directory: `dist`
-   - Environment variable: `NODE_VERSION` = `22`
-3. **Environment variables** (Production and Preview):
-   - `PUBLIC_SUPABASE_URL` = `https://bunlkimihykrtxitgwmg.supabase.co`
-   - `PUBLIC_SUPABASE_ANON_KEY` = your `sb_publishable_...` key
+### Workers Builds (Git integration)
 
-   Do **not** add `SUPABASE_SERVICE_ROLE_KEY` — the deployed site is read-only
-   and never needs it.
-4. Deploy. Pushes to `main` redeploy automatically.
-5. After attaching a custom domain, update `site` in `astro.config.mjs` and the
-   `Sitemap:` line in `public/robots.txt`.
+In the Cloudflare dashboard → **Workers & Pages → Create → Workers → Connect
+to Git**:
 
-`public/_headers` adds security headers and long-lived caching for hashed
-`/_astro/*` assets. `@astrojs/sitemap` emits `/sitemap-index.xml`.
+- Build command: `pnpm build`
+- Deploy command: `pnpm deploy` (runs `astro build && wrangler deploy`), or
+  `npx wrangler deploy` if you left the build step separate
+- **Environment variables** (Production and Preview):
+  - `PUBLIC_SUPABASE_URL` = `https://bunlkimihykrtxitgwmg.supabase.co`
+  - `PUBLIC_SUPABASE_ANON_KEY` = your `sb_publishable_...` key
+
+  Do **not** add `SUPABASE_SERVICE_ROLE_KEY` — the deployed site is read-only
+  and never needs it.
+
+`pnpm` is pinned via `packageManager` (`pnpm@10.11.1`) to match the build
+image. Commit `pnpm-lock.yaml`; the build runs `pnpm install --frozen-lockfile`.
+
+### Cloudflare Pages (alternative)
+
+Same build (`pnpm build`), output directory `dist`, framework preset Astro.
+Do not run `astro add cloudflare` for this static site.
+
+### Notes
+
+- Pushes to `main` redeploy automatically.
+- After attaching a custom domain, update `site` in `astro.config.mjs` and the
+  `Sitemap:` line in `public/robots.txt`.
+- `public/_headers` adds security headers and long-lived caching for hashed
+  `/_astro/*` assets. `@astrojs/sitemap` emits `/sitemap-index.xml`.
 
 PDF files are served by Supabase's CDN, not Cloudflare, so hosting bandwidth
 stays tiny regardless of download volume. Measured download of a 2 MB PDF:

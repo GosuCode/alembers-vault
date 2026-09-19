@@ -2,6 +2,7 @@
   "name": "alembers-vault",
   "type": "module",
   "version": "0.0.1",
+  "packageManager": "pnpm@10.11.1",
   "engines": {
     "node": ">=22.12.0"
   },
@@ -10,6 +11,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",
+    "deploy": "astro build && wrangler deploy",
     "upload": "node --env-file=.env scripts/upload-academic.mjs",
     "astro": "astro"
   },

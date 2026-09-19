@@ -1,0 +1,11 @@
+{
+  // Static Astro site: build to ./dist, then `wrangler deploy` serves the files.
+  // No `main` entry means no Worker script/adapter — pure static assets.
+  // https://developers.cloudflare.com/workers/framework-guides/web-apps/astro/#if-you-have-a-static-site
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "alembers-vault",
+  "compatibility_date": "2026-09-19",
+  "assets": {
+    "directory": "./dist"
+  }
+}
