@@ -74,6 +74,27 @@ compression is applied.
 > DOCX previews are rendered by Microsoft's online viewer, which fetches the
 > file from its public Supabase URL. The PDF path never leaves the browser.
 
+## Blog images
+
+Posts support images three ways:
+
+- **Inline, optimized** — store the file next to the post in `src/content/blog/`
+  and use `![alt](./image.png)`.
+- **`public/` or remote** — `![alt](/images/x.png)` or a full URL (served
+  as-is, not optimized).
+- **MDX** — `import { Image } from "astro:assets"` plus an image import for
+  full control.
+
+Optional frontmatter hero image (renders on the post and as the `/blogs/`
+thumbnail):
+
+```yaml
+heroImage: "./cover.png"
+heroImageAlt: "Cover description"
+```
+
+Optimization runs through `sharp` at build time (emits `.webp`).
+
 ## Deployment (Cloudflare)
 
 Static output — **no Astro adapter needed**. `wrangler.jsonc` declares the

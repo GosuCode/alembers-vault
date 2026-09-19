@@ -1,4 +1,5 @@
 ---
+import { Image } from "astro:assets";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getCollection } from "astro:content";
 import { formatDate } from "../../lib/format";
@@ -23,6 +24,17 @@ const posts = (await getCollection("blog", ({ data }) => !data.draft)).sort(
         posts.map((post) => (
           <li>
             <article>
+              {
+                post.data.heroImage && (
+                  <a href={`/blogs/${post.id}/`} class="block">
+                    <Image
+                      src={post.data.heroImage}
+                      alt={post.data.heroImageAlt ?? ""}
+                      class="mb-4 aspect-[2/1] w-full rounded-xl border border-slate-800 object-cover"
+                    />
+                  </a>
+                )
+              }
               <h2 class="text-xl font-semibold tracking-tight">
                 <a
                   href={`/blogs/${post.id}/`}

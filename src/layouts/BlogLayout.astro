@@ -1,4 +1,6 @@
 ---
+import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
 import BaseLayout from "./BaseLayout.astro";
 import { formatDate } from "../lib/format";
 
@@ -8,9 +10,19 @@ interface Props {
   pubDate: Date;
   updatedDate?: Date;
   tags?: string[];
+  heroImage?: ImageMetadata;
+  heroImageAlt?: string;
 }
 
-const { title, description, pubDate, updatedDate, tags = [] } = Astro.props;
+const {
+  title,
+  description,
+  pubDate,
+  updatedDate,
+  tags = [],
+  heroImage,
+  heroImageAlt = "",
+} = Astro.props;
 ---
 
 <BaseLayout title={`${title} · Blogs`} description={description}>
@@ -48,6 +60,16 @@ const { title, description, pubDate, updatedDate, tags = [] } = Astro.props;
           )
         }
       </header>
+
+      {
+        heroImage && (
+          <Image
+            src={heroImage}
+            alt={heroImageAlt}
+            class="mt-8 w-full rounded-xl border border-slate-800"
+          />
+        )
+      }
 
       <div class="prose prose-invert prose-amber mt-10 max-w-none">
         <slot />
