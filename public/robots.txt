@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://alembers-vault.gosucode1945.workers.dev/sitemap-index.xml
+Sitemap: https://vault.shreeshalember.com.np/sitemap-index.xml
