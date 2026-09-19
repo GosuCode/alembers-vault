@@ -1,0 +1,23 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import AcademicExplorer from "../../components/AcademicExplorer.tsx";
+---
+
+<BaseLayout
+  title="Academic · Alember's Vault"
+  description="Past papers, project PDFs, and notes with in-browser previews."
+>
+  <main class="mx-auto max-w-3xl px-6 py-16">
+    <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">
+      Academic Archive
+    </h1>
+    <p class="mt-4 text-slate-400">
+      Past papers, project PDFs, and notes — filter, search, and preview in the
+      browser.
+    </p>
+
+    <div class="mt-12">
+      <AcademicExplorer client:only="react" />
+    </div>
+  </main>
+</BaseLayout>

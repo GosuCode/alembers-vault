@@ -28,7 +28,28 @@ pnpm astro check    # type/content diagnostics
 
 Copy `.env.example` to `.env` and fill in the Supabase values. Only the
 `PUBLIC_`-prefixed keys are exposed to the client; keep the service-role key
-server-only (used by `src/pages/api/`).
+server-only (used by the upload script).
+
+- `PUBLIC_SUPABASE_URL` — `https://bunlkimihykrtxitgwmg.supabase.co`
+- `PUBLIC_SUPABASE_ANON_KEY` — publishable key (safe for the browser)
+- `SUPABASE_SERVICE_ROLE_KEY` — server-only, required for uploads
+
+## Academic archive
+
+PDFs live in the public `academic` storage bucket (50 MB per file, PDFs only).
+Metadata is stored in `public.academic_resources` with RLS enabled: anonymous
+read-only, writes only via the service role.
+
+Upload a PDF and register its metadata:
+
+```sh
+pnpm upload ./papers/ds-final-2024.pdf \
+  --title "Data Structures Final 2024" \
+  --category past-paper --course "CS201" --year 2024 --tags math,final
+```
+
+The resource appears on `/academic/` with client-side search, category/year
+filters, and an in-browser PDF preview (react-pdf).
 
 ## Structure
 

@@ -10,18 +10,22 @@
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",
+    "upload": "node --env-file=.env scripts/upload-academic.mjs",
     "astro": "astro"
   },
   "dependencies": {
     "@astrojs/markdown-satteri": "^0.4.1",
     "@astrojs/mdx": "^8.0.1",
     "@astrojs/react": "^6.0.6",
+    "@supabase/supabase-js": "^2.116.0",
     "@tailwindcss/vite": "^4.3.3",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "astro": "^7.3.3",
+    "pdfjs-dist": "6.3.289",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
+    "react-pdf": "^11.0.0",
     "tailwindcss": "^4.3.3"
   },
   "devDependencies": {

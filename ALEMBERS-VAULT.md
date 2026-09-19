@@ -51,7 +51,7 @@ Global Search: Fast client-side search across blogs, documents, and projects.
 
 [x] Phase 2: Content Engines — Build MDX blog engine and static project pages.
 
-[ ] Phase 3: Storage & Academic Hub — Integrate Supabase bucket for PDF storage and academic files.
+[x] Phase 3: Storage & Academic Hub — Integrate Supabase bucket for PDF storage and academic files.
 
 [ ] Phase 4: Deployment & Optimization — Connect repository to Vercel/Cloudflare Pages and test file download speeds.
 
