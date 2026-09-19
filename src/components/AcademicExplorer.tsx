@@ -30,6 +30,10 @@ function fileKind(resource: AcademicResource): string {
   return isPdf(resource) ? "PDF" : "DOCX";
 }
 
+function semesterLabel(semester: number | null): string {
+  return semester ? `Semester ${semester}` : "Unsorted";
+}
+
 export default function AcademicExplorer() {
   const [resources, setResources] = useState<AcademicResource[]>([]);
   const [status, setStatus] = useState<"loading" | "ready" | "error">(
@@ -37,6 +41,7 @@ export default function AcademicExplorer() {
   );
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("all");
+  const [semester, setSemester] = useState("all");
   const [year, setYear] = useState("all");
   const [selected, setSelected] = useState<AcademicResource | null>(null);
 
@@ -46,6 +51,7 @@ export default function AcademicExplorer() {
     supabase
       .from("academic_resources")
       .select("*")
+      .order("semester", { ascending: true, nullsFirst: false })
       .order("year", { ascending: false, nullsFirst: false })
       .order("title", { ascending: true })
       .then(({ data, error }) => {
@@ -64,6 +70,21 @@ export default function AcademicExplorer() {
     };
   }, []);
 
+  // Close the viewer on Escape and lock background scroll while open.
+  useEffect(() => {
+    if (!selected) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setSelected(null);
+    };
+    document.addEventListener("keydown", onKey);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [selected]);
+
   const categories = useMemo(() => {
     const unique = Array.from(
       new Set(resources.map((resource) => resource.category)),
@@ -71,6 +92,20 @@ export default function AcademicExplorer() {
     return [
       { value: "all", label: "All categories" },
       ...unique.map((value) => ({ value, label: categoryLabel(value) })),
+    ];
+  }, [resources]);
+
+  const semesters = useMemo(() => {
+    const unique = Array.from(
+      new Set(
+        resources
+          .map((resource) => resource.semester)
+          .filter((value): value is number => value !== null),
+      ),
+    ).sort((a, b) => a - b);
+    return [
+      { value: "all", label: "All semesters" },
+      ...unique.map((value) => ({ value: String(value), label: `Semester ${value}` })),
     ];
   }, [resources]);
 
@@ -92,6 +127,8 @@ export default function AcademicExplorer() {
     const needle = query.trim().toLowerCase();
     return resources.filter((resource) => {
       if (category !== "all" && resource.category !== category) return false;
+      if (semester !== "all" && String(resource.semester) !== semester)
+        return false;
       if (year !== "all" && String(resource.year) !== year) return false;
       if (!needle) return true;
       const haystack = [
@@ -104,7 +141,20 @@ export default function AcademicExplorer() {
         .toLowerCase();
       return haystack.includes(needle);
     });
-  }, [resources, query, category, year]);
+  }, [resources, query, category, semester, year]);
+
+  const groups = useMemo(() => {
+    const map = new Map<number | null, AcademicResource[]>();
+    for (const resource of filtered) {
+      const key = resource.semester ?? null;
+      const bucket = map.get(key);
+      if (bucket) bucket.push(resource);
+      else map.set(key, [resource]);
+    }
+    return Array.from(map.entries()).sort(
+      (a, b) => (a[0] ?? 99) - (b[0] ?? 99),
+    );
+  }, [filtered]);
 
   if (status === "loading") {
     return (
@@ -122,8 +172,16 @@ export default function AcademicExplorer() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="grid gap-4 sm:grid-cols-[1fr_auto_auto] sm:items-end">
-        <SearchBar value={query} onChange={setQuery} />
+      <div className="flex flex-wrap items-end gap-4">
+        <div className="min-w-[220px] flex-1">
+          <SearchBar value={query} onChange={setQuery} />
+        </div>
+        <Filter
+          label="semester"
+          value={semester}
+          options={semesters}
+          onChange={setSemester}
+        />
         <Filter
           label="category"
           value={category}
@@ -134,7 +192,7 @@ export default function AcademicExplorer() {
       </div>
 
       <p className="font-hand text-xl text-pencil">
-        {filtered.length} of {resources.length} in the drawer
+        {filtered.length} of {resources.length} papers in the drawer
       </p>
 
       {resources.length === 0 ? (
@@ -144,92 +202,125 @@ export default function AcademicExplorer() {
       ) : filtered.length === 0 ? (
         <p className="text-pencil">Nothing matches that filter.</p>
       ) : (
-        <ul className="grid gap-4 sm:grid-cols-2">
-          {filtered.map((resource) => (
-            <li key={resource.id}>
-              <button
-                type="button"
-                onClick={() => setSelected(resource)}
-                className="relative block h-full w-full rounded-lg border border-ink/80 bg-white p-5 text-left pop-sm transition duration-200 hover:-translate-y-1"
-              >
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <h2 className="text-base font-semibold leading-snug">
-                    {resource.title}
-                  </h2>
-                  <span className="shrink-0 -rotate-2 rounded-full border border-ink/70 bg-marker px-2.5 py-0.5 font-hand text-base leading-tight">
-                    {categoryLabel(resource.category)}
-                  </span>
-                </div>
-                {resource.description ? (
-                  <p className="mt-2 line-clamp-2 text-sm text-pencil">
-                    {resource.description}
-                  </p>
-                ) : null}
-                <div className="mt-4 flex flex-wrap items-center gap-2 font-hand text-base text-pencil">
-                  <span className="rounded-full border border-dashed border-pencil/50 px-2.5 py-0.5 leading-tight">
-                    {fileKind(resource)}
-                  </span>
-                  {resource.course ? (
-                    <span className="rounded-full border border-dashed border-pencil/50 px-2.5 py-0.5 leading-tight">
-                      {resource.course}
-                    </span>
-                  ) : null}
-                  {resource.year ? (
-                    <span className="rounded-full border border-dashed border-pencil/50 px-2.5 py-0.5 leading-tight">
-                      {resource.year}
-                    </span>
-                  ) : null}
-                  {resource.tags.slice(0, 3).map((tag) => (
-                    <span
-                      key={tag}
-                      className="rounded-full border border-dashed border-pencil/50 px-2.5 py-0.5 leading-tight"
+        <div className="flex flex-col gap-12">
+          {groups.map(([semesterValue, items]) => (
+            <section key={semesterValue ?? "unsorted"}>
+              <div className="flex items-center gap-4">
+                <h2 className="font-hand text-3xl whitespace-nowrap">
+                  {semesterLabel(semesterValue)}
+                </h2>
+                <span className="font-hand text-lg text-pencil">
+                  {items.length} paper{items.length === 1 ? "" : "s"}
+                </span>
+                <span className="h-px flex-1 bg-line" />
+              </div>
+
+              <ul className="mt-5 grid gap-4 sm:grid-cols-2">
+                {items.map((resource) => (
+                  <li key={resource.id}>
+                    <button
+                      type="button"
+                      onClick={() => setSelected(resource)}
+                      className="relative flex h-full w-full flex-col rounded-lg border border-ink/80 bg-white p-5 text-left pop-sm transition duration-200 hover:-translate-y-1"
                     >
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
-              </button>
-            </li>
+                      <h3 className="text-base font-semibold leading-snug">
+                        {resource.title}
+                      </h3>
+                      {resource.description ? (
+                        <p className="mt-2 line-clamp-2 text-sm text-pencil">
+                          {resource.description}
+                        </p>
+                      ) : null}
+                      <div className="mt-auto flex flex-wrap items-center gap-2 pt-4 font-hand text-base text-pencil">
+                        <span className="rounded-full border border-dashed border-pencil/50 px-2.5 py-0.5 leading-tight">
+                          {fileKind(resource)}
+                        </span>
+                        {resource.course ? (
+                          <span className="rounded-full border border-dashed border-pencil/50 px-2.5 py-0.5 leading-tight">
+                            {resource.course}
+                          </span>
+                        ) : null}
+                        {resource.year ? (
+                          <span className="rounded-full border border-dashed border-pencil/50 px-2.5 py-0.5 leading-tight">
+                            {resource.year}
+                          </span>
+                        ) : null}
+                        {resource.tags
+                          .filter((tag) => !/^sem-\d+$/.test(tag))
+                          .slice(0, 2)
+                          .map((tag) => (
+                            <span
+                              key={tag}
+                              className="rounded-full border border-dashed border-pencil/50 px-2.5 py-0.5 leading-tight"
+                            >
+                              #{tag}
+                            </span>
+                          ))}
+                      </div>
+                      <span className="mt-4 font-hand text-lg text-accent">
+                        view paper →
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
           ))}
-        </ul>
+        </div>
       )}
 
       {selected ? (
-        <section
-          id="viewer"
-          className="relative rounded-lg border border-ink/80 bg-white p-6 pop"
+        <div
+          className="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-ink/50 p-4 backdrop-blur-sm sm:p-8"
+          role="dialog"
+          aria-modal="true"
+          aria-label={selected.title}
+          onClick={() => setSelected(null)}
         >
-          <span className="tape -top-3 left-10 -rotate-3"></span>
-          <div className="mb-5 flex items-start justify-between gap-4">
-            <h2 className="text-xl font-semibold">{selected.title}</h2>
-            <button
-              type="button"
-              onClick={() => setSelected(null)}
-              className="rounded-md border border-ink/70 bg-white px-3 py-1 font-hand text-lg leading-tight transition hover:bg-marker"
-            >
-              close
-            </button>
-          </div>
-          {isPdf(selected) ? (
-            <Suspense
-              fallback={
-                <p className="py-10 text-center font-hand text-xl text-pencil">
-                  loading the pages…
+          <div
+            className="relative my-auto w-full max-w-4xl rounded-lg border border-ink bg-paper p-5 pop sm:p-6"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <span className="tape -top-3 left-10 -rotate-3"></span>
+            <div className="mb-5 flex items-start justify-between gap-4 border-b border-dashed border-line pb-4">
+              <div>
+                <h2 className="text-xl font-semibold">{selected.title}</h2>
+                <p className="mt-1 font-hand text-lg text-pencil">
+                  {semesterLabel(selected.semester)}
+                  {selected.course ? ` · ${selected.course}` : ""}
+                  {selected.year ? ` · ${selected.year}` : ""}
                 </p>
-              }
-            >
-              <PDFViewer
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelected(null)}
+                className="shrink-0 rounded-md border border-ink/70 bg-white px-3 py-1 font-hand text-lg leading-tight transition hover:bg-marker"
+              >
+                close ✕
+              </button>
+            </div>
+
+            {isPdf(selected) ? (
+              <Suspense
+                fallback={
+                  <p className="py-10 text-center font-hand text-xl text-pencil">
+                    loading the pages…
+                  </p>
+                }
+              >
+                <PDFViewer
+                  url={academicFileUrl(selected.storage_path)}
+                  title={selected.title}
+                />
+              </Suspense>
+            ) : (
+              <OfficeViewer
                 url={academicFileUrl(selected.storage_path)}
                 title={selected.title}
               />
-            </Suspense>
-          ) : (
-            <OfficeViewer
-              url={academicFileUrl(selected.storage_path)}
-              title={selected.title}
-            />
-          )}
-        </section>
+            )}
+          </div>
+        </div>
       ) : null}
     </div>
   );

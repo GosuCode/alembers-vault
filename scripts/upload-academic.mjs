@@ -5,7 +5,8 @@
 // Usage:
 //   node --env-file=.env scripts/upload-academic.mjs <file> --title "..." \
 //     [--description "..."] [--category past-paper|project-pdf|notes|other] \
-//     [--course "..."] [--year 2024] [--tags math,final] [--overwrite]
+//     [--course "..."] [--year 2024] [--semester 4] [--tags math,final] \
+//     [--overwrite]
 //
 // Requires PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in the env.
 
@@ -63,6 +64,12 @@ if (flags.year && Number.isNaN(year)) {
   process.exit(1);
 }
 
+const semester = flags.semester ? Number.parseInt(flags.semester, 10) : null;
+if (flags.semester && (Number.isNaN(semester) || semester < 1 || semester > 12)) {
+  console.error("Error: --semester must be a number between 1 and 12.");
+  process.exit(1);
+}
+
 const MIME_BY_EXTENSION = {
   ".pdf": "application/pdf",
   ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -110,6 +117,9 @@ if (upload.error) {
 const tags = flags.tags
   ? flags.tags.split(",").map((tag) => tag.trim()).filter(Boolean)
   : [];
+if (semester && !tags.includes(`sem-${semester}`)) {
+  tags.push(`sem-${semester}`);
+}
 
 const record = {
   title,
@@ -117,6 +127,7 @@ const record = {
   category,
   course: flags.course ?? null,
   year,
+  semester,
   tags,
   storage_path: storagePath,
   file_size: size,

@@ -63,12 +63,13 @@ Upload a document and register its metadata:
 ```sh
 pnpm upload ./papers/ds-final-2024.pdf \
   --title "Data Structures Final 2024" \
-  --category past-paper --course "CS201" --year 2024 --tags math,final
+  --category past-paper --course "CS201" --year 2024 --semester 4 --tags math,final
 ```
 
-The resource appears on `/academic/` with client-side search, category/year
-filters, and an in-browser preview: PDFs via react-pdf, DOCX via the Microsoft
-Office viewer (with a download fallback). Files are uploaded as-is — no
+`--semester` drives the semester grouping on `/academic/`; a `sem-N` tag is
+added automatically. The resource appears immediately with client-side search,
+semester/category/year filters, and a preview in a modal: PDFs via react-pdf,
+DOCX via the Microsoft Office viewer. Files are uploaded as-is — no
 compression is applied.
 
 > DOCX previews are rendered by Microsoft's online viewer, which fetches the
