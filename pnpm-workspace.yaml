@@ -1,3 +1,6 @@
+packages:
+  - "."
+# pnpm 11 reads `allowBuilds`; pnpm 10 reads `onlyBuiltDependencies`.
 allowBuilds:
   esbuild: true
 onlyBuiltDependencies:
