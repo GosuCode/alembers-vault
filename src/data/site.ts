@@ -2,16 +2,16 @@
 // Lines marked TODO are placeholders — replace with your own words.
 
 export const site = {
-  name: "Shreesh Alember",
-  shortName: "Shreesh",
+  name: "Alember Shreesh",
+  shortName: "Alember",
   handle: "GosuCode",
-  initials: "SA",
+  initials: "AS",
   role: "Computer engineering student · builder",
   location: "Nepal",
   tagline: "Notes, papers, and things I build.",
 
   bio: [
-    "I'm Shreesh. I study computer engineering and spend most of my time building small tools, breaking them, and writing down what I learn along the way.",
+    "I'm Alember. I study computer engineering and spend most of my time building small tools, breaking them, and writing down what I learn along the way.",
     "This vault is where those notes live — past papers and PDFs I want to find again, project write-ups, and the occasional longer piece.",
   ],
 
