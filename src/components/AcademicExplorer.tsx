@@ -21,6 +21,12 @@ function isPdf(resource: AcademicResource): boolean {
   return resource.storage_path.toLowerCase().endsWith(".pdf");
 }
 
+// Project reports/guidelines live on their project pages and have no
+// `/academic/<slug>/` route, so keep them out of this list.
+function isPaper(resource: AcademicResource): boolean {
+  return resource.category !== "project-pdf";
+}
+
 function fileKind(resource: AcademicResource): string {
   return isPdf(resource) ? "PDF" : "DOCX";
 }
@@ -36,8 +42,9 @@ interface Props {
 export default function AcademicExplorer({
   initialResources = [],
 }: Props) {
-  const [resources, setResources] =
-    useState<AcademicResource[]>(initialResources);
+  const [resources, setResources] = useState<AcademicResource[]>(
+    initialResources.filter(isPaper),
+  );
   const [status, setStatus] = useState<"loading" | "ready" | "error">(
     initialResources.length > 0 ? "ready" : "loading",
   );
@@ -54,6 +61,7 @@ export default function AcademicExplorer({
       getSupabase()
         .from("academic_resources")
         .select("*")
+        .neq("category", "project-pdf")
         .order("semester", { ascending: true, nullsFirst: false })
         .order("year", { ascending: false, nullsFirst: false })
         .order("title", { ascending: true })
@@ -64,7 +72,7 @@ export default function AcademicExplorer({
             setStatus((current) => (current === "ready" ? current : "error"));
             return;
           }
-          setResources(data ?? []);
+          setResources((data ?? []).filter(isPaper));
           setStatus("ready");
         });
     } catch (error) {
