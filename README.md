@@ -190,6 +190,29 @@ heroImageAlt: "Cover description"
 
 Optimization runs through `sharp` at build time (emits `.webp`).
 
+## Importing posts from Medium
+
+Posts live in `src/content/blog/<slug>.md`, with their images in a matching
+folder. A curated set was imported from a Medium data export (Settings → **Export
+your information**):
+
+```sh
+pnpm import:medium                 # uses ../../Medium Blog by default
+pnpm import:medium -- --export ./somewhere --force
+```
+
+`scripts/import-medium.mjs` reads the export HTML, converts the body to Markdown
+(turndown + GFM), keeps fenced code languages, **downloads every image** into the
+content folder, drops Medium member CTAs, and rewrites links between imported
+posts to their vault URLs. Existing targets are skipped unless `--force` is
+passed. Post selection (slug, tags, Medium id) is the `POSTS` array at the top of
+the script.
+
+Imported posts carry `sourceUrl` and render an "originally published on Medium"
+line; canonical stays on the vault URL, so the vault copy is the indexed one. See
+[`MEDIUM-IMPORT-PLAN.md`](../MEDIUM-IMPORT-PLAN.md) for the selection and
+rationale.
+
 ## Deployment (Cloudflare)
 
 Static output — **no Astro adapter needed**. `wrangler.jsonc` declares the
