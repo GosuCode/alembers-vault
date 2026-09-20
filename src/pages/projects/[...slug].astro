@@ -2,8 +2,6 @@
 import { Image } from "astro:assets";
 import { getCollection, render, type CollectionEntry } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import BlogCard from "../../components/BlogCard.astro";
-import ProjectCard from "../../components/ProjectCard.astro";
 import { formatDate } from "../../lib/format";
 import { ordinal } from "../../lib/academic";
 import {
@@ -338,11 +336,46 @@ const jsonLd = [
                 all projects →
               </a>
             </div>
-            <div class="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <ul class="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {moreProjects.map((item) => (
-                <ProjectCard project={item} />
+                <li class="flex">
+                  <a
+                    href={`/projects/${item.id}/`}
+                    class="group relative flex h-full w-full flex-col card-paper pop transition duration-200 hover:-translate-y-1 hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-paper"
+                  >
+                    <span class="tape -top-2.5 left-6 -rotate-6"></span>
+                    <span class="block overflow-hidden rounded-t-lg border-b border-ink/10">
+                      {item.data.heroImage ? (
+                        <Image
+                          src={item.data.heroImage}
+                          alt={`${item.data.title} screenshot`}
+                          widths={[300, 600]}
+                          sizes="(min-width: 1024px) 16rem, (min-width: 640px) 45vw, 90vw"
+                          class="aspect-[16/9] w-full object-cover"
+                        />
+                      ) : (
+                        <span class="grid aspect-[16/9] w-full place-items-center bg-paper-deep font-hand text-lg text-pencil">
+                          no cover yet
+                        </span>
+                      )}
+                    </span>
+                    <span class="flex flex-1 flex-col px-4 pb-4 pt-3">
+                      <span class="font-hand text-base leading-tight text-pencil">
+                        {item.data.program && item.data.semester
+                          ? `${item.data.program} · ${ordinal(item.data.semester)} semester`
+                          : "Project"}
+                      </span>
+                      <span class="mt-0.5 font-semibold leading-snug transition-colors group-hover:text-accent">
+                        {item.data.title}
+                      </span>
+                      <span class="mt-1 line-clamp-4 text-sm text-pencil">
+                        {item.data.description}
+                      </span>
+                    </span>
+                  </a>
+                </li>
               ))}
-            </div>
+            </ul>
           </section>
         )
       }
@@ -359,11 +392,44 @@ const jsonLd = [
                 all blogs →
               </a>
             </div>
-            <div class="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <ul class="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {relatedPosts.map((post) => (
-                <BlogCard post={post} />
+                <li class="flex">
+                  <a
+                    href={`/blogs/${post.id}/`}
+                    class="group relative flex h-full w-full flex-col card-paper pop transition duration-200 hover:-translate-y-1 hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-paper"
+                  >
+                    <span class="tape -top-2.5 left-6 -rotate-6"></span>
+                    <span class="block overflow-hidden rounded-t-lg border-b border-ink/10">
+                      {post.data.heroImage ? (
+                        <Image
+                          src={post.data.heroImage}
+                          alt={post.data.heroImageAlt ?? ""}
+                          widths={[300, 600]}
+                          sizes="(min-width: 1024px) 16rem, (min-width: 640px) 45vw, 90vw"
+                          class="aspect-[16/9] w-full object-cover"
+                        />
+                      ) : (
+                        <span class="grid aspect-[16/9] w-full place-items-center bg-paper-deep font-hand text-lg text-pencil">
+                          no cover yet
+                        </span>
+                      )}
+                    </span>
+                    <span class="flex flex-1 flex-col px-4 pb-4 pt-3">
+                      <span class="font-hand text-base leading-tight text-pencil">
+                        {formatDate(post.data.pubDate)}
+                      </span>
+                      <span class="mt-0.5 font-semibold leading-snug transition-colors group-hover:text-accent">
+                        {post.data.title}
+                      </span>
+                      <span class="mt-1 line-clamp-4 text-sm text-pencil">
+                        {post.data.description}
+                      </span>
+                    </span>
+                  </a>
+                </li>
               ))}
-            </div>
+            </ul>
           </section>
         )
       }
