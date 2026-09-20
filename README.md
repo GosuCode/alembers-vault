@@ -12,7 +12,7 @@ free-tier checklist.
 - **React** — interactive islands only (PDF viewer, search filters)
 - **Tailwind CSS** — styling
 - **Supabase** — Postgres + file storage buckets (free tier)
-- **Vercel / Cloudflare Pages** — hosting + CI/CD
+- **Cloudflare Workers** — static hosting + CI/CD
 
 ## Commands
 
@@ -74,6 +74,42 @@ compression is applied.
 
 > DOCX previews are rendered by Microsoft's online viewer, which fetches the
 > file from its public Supabase URL. The PDF path never leaves the browser.
+
+## Semester projects
+
+Project write-ups live in `src/content/projects/*.mdx`. Alongside the usual
+title/description/tags, each entry can carry:
+
+```yaml
+semester: 6
+year: 2024
+yearBs: 2081
+status: archived # coursework | maintained | archived
+tech: [Next.js, PostgreSQL, Drizzle ORM]
+links:
+  - { label: repo, href: "https://github.com/...", kind: repo }
+  - { label: live, href: "https://...", kind: demo }
+reports:
+  - { label: "Final report (PDF)", path: "project-pdf/2024/report.pdf", kind: pdf, role: report }
+heroImage: "./project/home.png"
+gallery:
+  - { src: "./project/class-diagram.png", caption: "Class diagram" }
+```
+
+Report files use the same Supabase `academic` bucket as past papers, stored under
+`project-pdf/<year>/<file>`. On the project page they are grouped by `role`
+(`report`, `source`, `proposal`, `presentation`, `guideline`) with open/download
+buttons. They are **not** listed under `/academic/`, which stays past-papers only;
+university course guidelines are attached to the project they belong to.
+
+```sh
+pnpm upload ./report.pdf --category project-pdf --year 2024 --semester 6 \
+  --title "Artisan Nepal — Final Report" --tags "project,final-report"
+```
+
+Every project page renders a fixed disclaimer (defined in `src/lib/projects.ts`):
+the report is the version submitted for coursework and was not revised after the
+external evaluation.
 
 ## Search engine optimization (SEO)
 

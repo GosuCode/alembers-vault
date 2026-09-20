@@ -11,7 +11,9 @@ import {
 import { academicFileUrl, type AcademicResource } from "../../lib/supabase";
 
 export async function getStaticPaths() {
-  const resources = await fetchAcademicResources();
+  const resources = (await fetchAcademicResources()).filter(
+    (resource) => resource.category !== "project-pdf",
+  );
   return resources.map((resource) => ({
     params: { slug: slugFor(resource) },
     props: {

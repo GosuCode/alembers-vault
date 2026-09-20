@@ -1,7 +1,17 @@
 ---
+import { Image } from "astro:assets";
 import { getCollection, render, type CollectionEntry } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { formatDate } from "../../lib/format";
+import { ordinal } from "../../lib/academic";
+import {
+  REPORT_NOTICE,
+  REPORT_ROLE_LABEL,
+  REPORT_ROLE_ORDER,
+  STATUS_LABEL,
+} from "../../lib/projects";
+import { academicFileUrl } from "../../lib/supabase";
+import { site } from "../../data/site";
 
 export async function getStaticPaths() {
   const projects = await getCollection("projects");
@@ -17,14 +27,79 @@ interface Props {
 
 const { project } = Astro.props;
 const { Content } = await render(project);
-const { title, description, pubDate, tags, repo, demo } = project.data;
-const links = [
-  { href: repo, label: "repo" },
-  { href: demo, label: "demo" },
-].filter((link): link is { href: string; label: string } => Boolean(link.href));
+const {
+  title,
+  description,
+  pubDate,
+  tags,
+  links,
+  reports,
+  semester,
+  year,
+  yearBs,
+  status,
+  tech,
+  heroImage,
+  gallery,
+  notice,
+} = project.data;
+
+const semesterLabel = semester ? `${ordinal(semester)} semester` : null;
+const yearLabel = year
+  ? `${yearBs ? `${yearBs} BS · ` : ""}${year} AD`
+  : null;
+const statusLabel = status ? STATUS_LABEL[status] : null;
+
+const reportsByRole = REPORT_ROLE_ORDER.map((role) => ({
+  role,
+  items: reports.filter((report) => report.role === role),
+})).filter((group) => group.items.length > 0);
+
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const repoLink = links.find((link) => link.kind === "repo")?.href;
+const demoLink = links.find(
+  (link) => link.kind === "demo" || link.kind === "dashboard",
+)?.href;
+
+const jsonLd = [
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: title,
+    description,
+    applicationCategory: "WebApplication",
+    operatingSystem: "Web",
+    url: canonical,
+    author: { "@type": "Person", name: site.name },
+    inLanguage: "en",
+    ...(repoLink ? { codeRepository: repoLink } : {}),
+    ...(demoLink ? { installUrl: demoLink } : {}),
+    ...(year ? { datePublished: String(year) } : {}),
+    offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: new URL("/", Astro.site).href,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Projects",
+        item: new URL("/projects/", Astro.site).href,
+      },
+      { "@type": "ListItem", position: 3, name: title, item: canonical },
+    ],
+  },
+];
 ---
 
-<BaseLayout title={`${title} · Projects`} description={description}>
+<BaseLayout title={`${title} · Projects`} description={description} jsonLd={jsonLd}>
   <main class="mx-auto max-w-3xl px-6 py-12">
     <a
       href="/projects/"
@@ -35,13 +110,34 @@ const links = [
 
     <article class="margin-rule mt-8 pl-6 sm:pl-10">
       <header>
-        <p class="font-hand text-xl text-pencil">{formatDate(pubDate)}</p>
+        <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <p class="font-hand text-xl text-pencil">{formatDate(pubDate)}</p>
+          {
+            (semesterLabel || yearLabel) && (
+              <p class="font-hand text-xl text-pencil">
+                {semesterLabel}
+                {semesterLabel && yearLabel && " · "}
+                {yearLabel}
+              </p>
+            )
+          }
+        </div>
         <h1
           class="mt-2 text-3xl font-semibold leading-tight tracking-tight sm:text-4xl"
         >
           {title}
         </h1>
         <p class="mt-4 text-lg text-pencil">{description}</p>
+
+        {
+          tech.length > 0 && (
+            <p class="mt-3 text-sm text-pencil">
+              <span class="font-hand text-lg">built with </span>
+              {tech.join(" · ")}
+            </p>
+          )
+        }
+
         {
           tags.length > 0 && (
             <ul class="mt-4 flex flex-wrap gap-2">
@@ -53,6 +149,7 @@ const links = [
             </ul>
           )
         }
+
         {
           links.length > 0 && (
             <div class="mt-5 flex flex-wrap gap-3">
@@ -71,9 +168,106 @@ const links = [
         }
       </header>
 
+      {
+        heroImage && (
+          <Image
+            src={heroImage}
+            alt={`${title} screenshot`}
+            widths={[600, 1200]}
+            sizes="(min-width: 768px) 768px, 90vw"
+            class="mt-8 w-full rounded-lg border border-ink/60"
+          />
+        )
+      }
+
+      <div class="mt-8 rounded-lg border border-ink/60 bg-marker/60 p-4 text-sm">
+        <p class="font-hand text-xl">⚠ final report, not updated</p>
+        <p class="mt-1 text-pencil">{notice ?? REPORT_NOTICE}</p>
+        {statusLabel && <p class="mt-2 text-pencil">Status: {statusLabel}.</p>}
+      </div>
+
       <div class="prose prose-lg mt-10 max-w-none">
         <Content />
       </div>
+
+      {
+        reportsByRole.length > 0 && (
+          <section class="mt-12 border-t border-dashed border-line pt-8">
+            <h2 class="font-hand text-3xl sketch-underline">
+              Report &amp; documents
+            </h2>
+            {reportsByRole.map(({ role, items }) => (
+              <div class="mt-5">
+                <h3 class="text-sm font-semibold uppercase tracking-wide text-pencil">
+                  {REPORT_ROLE_LABEL[role]}
+                </h3>
+                <ul class="mt-3 grid gap-3">
+                  {items.map((item) => (
+                    <li class="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-ink/60 bg-white px-4 py-3">
+                      <div>
+                        <p class="text-sm font-semibold">{item.label}</p>
+                        {item.note && (
+                          <p class="text-sm text-pencil">{item.note}</p>
+                        )}
+                      </div>
+                      <div class="flex gap-2">
+                        {item.kind === "pdf" && (
+                          <a
+                            href={academicFileUrl(item.path)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="rounded-md border border-ink/70 bg-accent px-3 py-1 font-hand text-lg leading-tight text-white transition hover:bg-accent-dark"
+                          >
+                            open ↗
+                          </a>
+                        )}
+                        <a
+                          href={academicFileUrl(item.path)}
+                          download
+                          class="rounded-md border border-ink/70 bg-marker px-3 py-1 font-hand text-lg leading-tight transition hover:-translate-y-0.5"
+                        >
+                          download
+                        </a>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </section>
+        )
+      }
+
+      {
+        gallery.length > 0 && (
+          <section class="mt-12 border-t border-dashed border-line pt-8">
+            <h2 class="font-hand text-3xl sketch-underline">Screens &amp; diagrams</h2>
+            <div class="mt-6 grid gap-6 sm:grid-cols-2">
+              {gallery.map((item) => (
+                <figure>
+                  <a
+                    href={item.src.src}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="block overflow-hidden rounded-lg border border-ink/60 bg-white transition hover:-translate-y-0.5"
+                  >
+                    <Image
+                      src={item.src}
+                      alt={item.caption}
+                      widths={[400, 800]}
+                      sizes="(min-width: 640px) 45vw, 90vw"
+                      class="w-full"
+                    />
+                  </a>
+                  <figcaption class="mt-2 font-hand text-lg text-pencil">
+                    {item.caption}
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+          </section>
+        )
+      }
     </article>
   </main>
 </BaseLayout>

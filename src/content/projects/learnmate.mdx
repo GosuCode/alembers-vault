@@ -1,0 +1,90 @@
+---
+title: "LearnMate — an e-learning platform"
+description: "A study platform with summaries, flashcards, quizzes, and spaced repetition, plus a BART summarization microservice. 8th semester final project."
+pubDate: 2025-06-01
+tags: ["nextjs", "fastify", "postgresql", "ai", "e-learning"]
+semester: 8
+year: 2025
+yearBs: 2082
+status: "archived"
+featured: true
+tech:
+  ["Next.js", "React", "TypeScript", "Tailwind CSS", "ShadCN", "Fastify", "Prisma", "PostgreSQL", "Python", "FastAPI", "Hugging Face Transformers (BART)", "JWT"]
+links:
+  - label: "repo (client)"
+    href: "https://github.com/GosuCode/LearnMate"
+    kind: "repo"
+  - label: "repo (dashboard)"
+    href: "https://github.com/GosuCode/LearnMate-Dashboard"
+    kind: "repo"
+  - label: "repo (api)"
+    href: "https://github.com/GosuCode/learnmate-api"
+    kind: "repo"
+  - label: "repo (ai service)"
+    href: "https://github.com/GosuCode/learnmate-fastapi-microservice"
+    kind: "repo"
+reports:
+  - label: "Final report (PDF)"
+    path: "project-pdf/2025/learnmate-final-report.pdf"
+    kind: "pdf"
+    role: "report"
+  - label: "Project (III) course guideline"
+    path: "project-pdf/2025/project-iii-guidelines-bca-8th-sem.pdf"
+    kind: "pdf"
+    role: "guideline"
+    note: "The 8th-semester brief this project was built against."
+gallery:
+  - src: "./learnmate/class-diagram.png"
+    caption: "Class diagram"
+  - src: "./learnmate/object-diagram.png"
+    caption: "Object diagram"
+  - src: "./learnmate/sequence-diagram.png"
+    caption: "Sequence diagram"
+  - src: "./learnmate/activity-diagram.png"
+    caption: "Activity diagram"
+  - src: "./learnmate/state-diagram.png"
+    caption: "State diagram"
+  - src: "./learnmate/component-diagram.png"
+    caption: "Component diagram"
+  - src: "./learnmate/deployment-diagram.png"
+    caption: "Deployment diagram"
+---
+
+LearnMate was my 8th-semester final project: a study platform that turns course
+material into summaries, flashcards, and quizzes, then schedules reviews with a
+spaced-repetition algorithm.
+
+## What it does
+
+- **Materials** — create study material from existing sources and organise it by subject.
+- **Summaries** — abstractive summarization through a dedicated AI microservice.
+- **Practice** — flashcards and generated quizzes for active recall.
+- **Spaced repetition** — an SM-2 based scheduler adapts review intervals to each learner.
+- **Progress** — track study activity over time.
+- **Reports** — generate DOCX reports from study data (chunked on the server).
+
+## Architecture
+
+LearnMate is split into a Next.js client, a dashboard, a Fastify API, and a
+separate Python service for AI work. The Fastify backend owns the domain logic
+(auth, scheduling, DOCX generation, report chunking) over PostgreSQL via Prisma,
+while the Python service handles text cleaning, tokenisation, and summarization
+and returns results to the TypeScript API.
+
+| Layer      | Choice                                              |
+| ---------- | --------------------------------------------------- |
+| Frontend   | Next.js, React, TypeScript, Tailwind, ShadCN        |
+| Backend    | Fastify, Prisma ORM                                 |
+| Database   | PostgreSQL                                          |
+| AI service | Python, FastAPI, Hugging Face Transformers (BART)   |
+| Auth       | JWT                                                 |
+
+## Repositories
+
+Four repos: the `LearnMate` client, `LearnMate-Dashboard`, the `learnmate-api`
+Fastify backend, and `learnmate-fastapi-microservice` for BART summarization.
+
+## Known limitations
+
+There is no live deployment — the repositories are archived. The report's design
+is complete, but no follow-up work was done after the external evaluation.

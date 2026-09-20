@@ -1,23 +1,46 @@
 ---
+import { Image } from "astro:assets";
 import type { CollectionEntry } from "astro:content";
-import { formatDate } from "../lib/format";
+import { ordinal } from "../lib/academic";
 
 interface Props {
   project: CollectionEntry<"projects">;
 }
 
 const { project } = Astro.props;
-const { title, description, pubDate, tags, repo, demo, featured } = project.data;
-const links = [
-  { href: repo, label: "repo" },
-  { href: demo, label: "demo" },
-].filter((link): link is { href: string; label: string } => Boolean(link.href));
+const { title, description, tags, links, featured, semester, status, heroImage } =
+  project.data;
+
+const semesterLabel = semester ? `${ordinal(semester)} sem` : null;
+const statusLabel =
+  status === "archived"
+    ? "not maintained"
+    : status === "maintained"
+      ? "occasionally maintained"
+      : null;
 ---
 
 <article
   class="group relative flex h-full flex-col card-paper p-6 pop transition duration-200 hover:-translate-y-1"
 >
   <span class="tape -top-2.5 right-8 rotate-6"></span>
+
+  {
+    heroImage && (
+      <a
+        href={`/projects/${project.id}/`}
+        class="mb-4 block overflow-hidden rounded-lg border border-ink/60 bg-white"
+      >
+        <Image
+          src={heroImage}
+          alt={`${title} screenshot`}
+          widths={[400, 800]}
+          sizes="(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 90vw"
+          class="h-40 w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+        />
+      </a>
+    )
+  }
 
   <div class="flex items-start justify-between gap-3">
     <h3 class="text-lg font-semibold leading-snug">
@@ -37,12 +60,15 @@ const links = [
     }
   </div>
 
-  <time
-    datetime={pubDate.toISOString()}
-    class="mt-1 font-hand text-lg leading-none text-pencil"
-  >
-    {formatDate(pubDate)}
-  </time>
+  {
+    (semesterLabel || statusLabel) && (
+      <p class="mt-1 flex flex-wrap items-center gap-x-2 font-hand text-lg leading-none text-pencil">
+        {semesterLabel && <span>{semesterLabel}</span>}
+        {semesterLabel && statusLabel && <span aria-hidden="true">·</span>}
+        {statusLabel && <span>{statusLabel}</span>}
+      </p>
+    )
+  }
 
   <p class="mt-3 line-clamp-4 text-sm text-pencil">{description}</p>
 
@@ -61,7 +87,7 @@ const links = [
   {
     links.length > 0 && (
       <div class="mt-auto flex flex-wrap gap-2 pt-5">
-        {links.map(({ href, label }) => (
+        {links.slice(0, 3).map(({ href, label }) => (
           <a
             href={href}
             target="_blank"

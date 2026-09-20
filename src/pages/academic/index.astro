@@ -5,7 +5,9 @@ import { fetchAcademicResources, slugFor } from "../../lib/academic";
 
 // Fetched at build time so the paper list is rendered into the HTML (crawlable),
 // then the island hydrates for search/filter/preview.
-const resources = await fetchAcademicResources();
+  const resources = (await fetchAcademicResources()).filter(
+    (resource) => resource.category !== "project-pdf",
+  );
 
 const itemListJsonLd = {
   "@context": "https://schema.org",

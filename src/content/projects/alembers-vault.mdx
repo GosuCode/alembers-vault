@@ -1,26 +1,40 @@
 ---
 title: "Alember's Vault"
-description: "A personal full-stack archive for tech blogs, academic materials, and project showcases."
+description: "The personal archive you are reading — a static, content-first site for blogs, past papers, and semester projects."
 pubDate: 2026-09-19
 tags: ["astro", "tailwind", "supabase"]
-repo: "https://github.com/GosuCode/alembers-vault"
 featured: true
+status: "maintained"
+tech: ["Astro", "React", "Tailwind CSS v4", "Supabase", "Cloudflare Workers"]
+links:
+  - label: "repo"
+    href: "https://github.com/GosuCode/alembers-vault"
+    kind: "repo"
+  - label: "live"
+    href: "https://vault.shreeshalember.com.np"
+    kind: "demo"
 ---
 
-The site you are reading. Content-first static site with Astro and Tailwind,
-with Supabase planned for PDF storage in a later phase.
+The site you are reading: a content-first static archive for tech blogs, past
+question papers, and the projects I built through my BCA.
 
 ## Highlights
 
-- **Astro** static output — zero JS by default, React only where needed.
-- **MDX blog engine** backed by typed content collections.
-- **Project showcase** driven by the same content layer.
-- **Supabase** bucket integration on the roadmap for PDF storage.
+- **Astro** static output — pages pre-rendered at build time, zero JS by default.
+- **React islands** only where needed (PDF viewer, search and filters).
+- **Supabase** for stored documents — Postgres metadata plus a public storage bucket.
+- **OCR pipeline** that makes scanned past papers searchable by their text.
+- **Cloudflare Workers** hosting with a custom domain.
 
-## Stack
+## How it is put together
 
-| Layer    | Choice                       |
-| -------- | ---------------------------- |
-| Frontend | Astro + React islands        |
-| Styling  | Tailwind CSS v4              |
-| Data     | Supabase (Postgres + Storage)|
+| Layer    | Choice                          |
+| -------- | ------------------------------- |
+| Frontend | Astro + React islands           |
+| Styling  | Tailwind CSS v4                 |
+| Data     | Supabase (Postgres + Storage)   |
+| Search   | Build-time rendering + JSON-LD  |
+| Hosting  | Cloudflare Workers (static)     |
+
+Academic documents are uploaded with a small script and listed on `/academic/`;
+each paper also gets its own indexable page.

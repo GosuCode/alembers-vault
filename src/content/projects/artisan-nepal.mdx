@@ -1,0 +1,110 @@
+---
+title: "Artisan Nepal (DOKO) — handmade crafts e-commerce"
+description: "An online marketplace connecting Nepali artisans with buyers: listings, reviews, order tracking, and sales analytics. 6th semester project."
+pubDate: 2024-06-01
+tags: ["e-commerce", "nextjs", "postgresql", "marketplace"]
+semester: 6
+year: 2024
+yearBs: 2081
+status: "maintained"
+featured: true
+tech:
+  ["Next.js", "React", "Node.js", "Express.js", "PostgreSQL", "Drizzle ORM", "JWT", "Cloudinary"]
+heroImage: "./artisan-nepal/home.png"
+links:
+  - label: "repo"
+    href: "https://github.com/GosuCode/DOKO-Ecommerce-Platform"
+    kind: "repo"
+  - label: "live"
+    href: "https://doko-lake.vercel.app/"
+    kind: "demo"
+  - label: "dashboard"
+    href: "https://doko-lake.vercel.app/dashboard"
+    kind: "dashboard"
+reports:
+  - label: "Final report (PDF)"
+    path: "project-pdf/2024/artisan-nepal-final-report.pdf"
+    kind: "pdf"
+    role: "report"
+  - label: "Final report (DOCX source)"
+    path: "project-pdf/2024/artisan-nepal-final-report.docx"
+    kind: "docx"
+    role: "source"
+  - label: "Proposal report (PDF)"
+    path: "project-pdf/2024/artisan-nepal-proposal-report.pdf"
+    kind: "pdf"
+    role: "proposal"
+  - label: "Presentation (PDF)"
+    path: "project-pdf/2024/artisan-nepal-presentation.pdf"
+    kind: "pdf"
+    role: "presentation"
+    note: "Converted from the original slide deck."
+  - label: "Project (II) course guideline"
+    path: "project-pdf/2024/project-ii-guidelines-bca-6th-sem.pdf"
+    kind: "pdf"
+    role: "guideline"
+    note: "The 6th-semester brief this project was built against."
+gallery:
+  - src: "./artisan-nepal/products.png"
+    caption: "Product listing with filtering"
+  - src: "./artisan-nepal/product-details.png"
+    caption: "Product detail page"
+  - src: "./artisan-nepal/class-diagram.png"
+    caption: "Class diagram"
+  - src: "./artisan-nepal/object-diagram.png"
+    caption: "Object diagram"
+  - src: "./artisan-nepal/sequence-diagram.png"
+    caption: "Sequence diagram"
+  - src: "./artisan-nepal/activity-diagram.png"
+    caption: "Activity diagram"
+  - src: "./artisan-nepal/state-diagram.png"
+    caption: "State diagram"
+  - src: "./artisan-nepal/component-diagram.png"
+    caption: "Component diagram"
+  - src: "./artisan-nepal/deployment-diagram.png"
+    caption: "Deployment diagram"
+  - src: "./artisan-nepal/process-order.png"
+    caption: "Order processing flow"
+  - src: "./artisan-nepal/flowchart.png"
+    caption: "System flowchart"
+---
+
+Artisan Nepal (built as **DOKO**) is an online marketplace for handmade products
+and original artwork in Nepal — a dedicated storefront for local artisans rather
+than a general-purpose shop.
+
+## The problem
+
+Artisans in Nepal often lack a direct route to buyers and depend on middlemen,
+which eats into already-thin margins. DOKO gives them their own listings, order
+and sales tooling, and direct contact with customers.
+
+## What it does
+
+- **Listings** — artisans add, edit, and manage products with images and details.
+- **Discovery** — buyers browse and filter by category.
+- **Reviews** — customers rate and review products.
+- **Orders** — order tracking from placement through fulfilment.
+- **Sales analytics** — dashboards so sellers can see how their shop performs.
+
+## Stack
+
+| Layer      | Choice                                  |
+| ---------- | --------------------------------------- |
+| Frontend   | Next.js, React.js, Tailwind             |
+| Backend    | Node.js, Express.js                     |
+| Database   | PostgreSQL with Drizzle ORM             |
+| Auth       | JWT sessions                            |
+| Media      | Cloudinary for product images           |
+
+## Engineering notes
+
+The report documents the full stack, and the diagrams below cover the analysis
+and design — class, object, sequence, activity, state, component, and deployment
+views, plus the process-order flow.
+
+## Known limitations
+
+The code has been maintained only occasionally since submission. The live demo
+may be slow or partially broken as the free deployment sleeps, and features
+described in the report were not extended after the external evaluation.

@@ -26,7 +26,9 @@ export const ACADEMIC_BUCKET = "academic";
 export type AcademicResource =
   Database["public"]["Tables"]["academic_resources"]["Row"];
 
+// Public URL built from env directly, so build-time pages never throw when the
+// client can't be constructed.
 export function academicFileUrl(storagePath: string): string {
-  return getSupabase().storage.from(ACADEMIC_BUCKET).getPublicUrl(storagePath)
-    .data.publicUrl;
+  if (!supabaseUrl) return "";
+  return `${supabaseUrl}/storage/v1/object/public/${ACADEMIC_BUCKET}/${storagePath}`;
 }
