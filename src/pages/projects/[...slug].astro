@@ -235,11 +235,15 @@ const jsonLd = [
         )
       }
 
-      <div class="mt-8 rounded-lg border border-ink/60 bg-marker/60 p-4 text-sm">
-        <p class="font-hand text-xl">⚠ final report, not updated</p>
-        <p class="mt-1 text-pencil">{notice ?? REPORT_NOTICE}</p>
-        {statusLabel && <p class="mt-2 text-pencil">Status: {statusLabel}.</p>}
-      </div>
+      {
+        program && semester && (
+          <div class="mt-8 rounded-lg border border-ink/60 bg-marker/60 p-4 text-sm">
+            <p class="font-hand text-xl">⚠ final report, not updated</p>
+            <p class="mt-1 text-pencil">{notice ?? REPORT_NOTICE}</p>
+            {statusLabel && <p class="mt-2 text-pencil">Status: {statusLabel}.</p>}
+          </div>
+        )
+      }
 
       <div class="prose prose-lg mt-10 max-w-none">
         <Content />

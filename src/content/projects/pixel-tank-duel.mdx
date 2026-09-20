@@ -1,0 +1,85 @@
+---
+title: "Pixel Tank Duel"
+description: "A top-down 2D tank shooter for 2–4 players on one screen's Wi-Fi: a Node server hosts the match and everyone joins from a browser."
+pubDate: 2026-09-20
+tags: ["game", "multiplayer", "node", "websockets", "canvas"]
+status: "maintained"
+tech: ["Node.js", "Express", "ws (WebSockets)", "HTML5 Canvas", "JavaScript"]
+heroImage: "./pixel-tank-duel/multiplayer-online.png"
+links:
+  - label: "repo"
+    href: "https://github.com/GosuCode/pixel-tank-duel"
+    kind: "repo"
+gallery:
+  - src: "./pixel-tank-duel/armory.png"
+    caption: "The Armory — hulls, turrets, barrels and colours"
+  - src: "./pixel-tank-duel/power-ups.png"
+    caption: "Power-ups"
+  - src: "./pixel-tank-duel/emotes.png"
+    caption: "Emotes (trash talk)"
+---
+
+A local multiplayer tank shooter for 2–4 players. One device runs the server and
+hosts the match; everyone else joins from a phone, laptop, or tablet on the same
+Wi-Fi — no internet needed.
+
+## How it works
+
+The host runs a Node process that is **authoritative**: it owns the game loop
+(movement, shooting, collisions, round timer) at 60 updates/sec and broadcasts
+state to every connected browser over WebSockets. Clients only send input, which
+keeps everyone in sync without a central server on the internet.
+
+## Gameplay
+
+- Move with `WASD`/arrows or an on-screen joystick; fire with `Space` or the FIRE button.
+- A 3-2-1 countdown opens each round, then 1.2 s of spawn protection. Tanks have **3 HP**.
+- Last tank standing wins; if the 60 s timer runs out, most kills wins, and a tie goes to sudden death.
+- Matches are **first to 3 round wins**, up to 4 players.
+- Type with `T`/Enter and taunt with `1`–`7` emotes; hold `Tab` for the scoreboard.
+
+## Rooms and the armory
+
+A single server hosts many independent games. Each **room** has a 4-letter code,
+its own arena and players, and rooms never see each other. You can create an open
+room (listed publicly) or an invite-only one, join from the list or by code, and a
+shared `?room=CODE` link drops straight into the match.
+
+Before deploying — and any time mid-game — the **Armory** lets you set a callsign,
+pick a hull, turret, barrel length and colour. Parts are cosmetic only; they don't
+change speed, hitbox, or damage. A **Controls** toggle switches between classic
+(turret follows your driving) and independent aim (mouse or a second touch stick).
+
+## Systems
+
+- **Bolt economy & The Forge** — earn bolts in battle, spend them on cosmetics and consumables.
+- **Haunts** — keep losing and your own browser starts fighting back.
+- **Persistence** — progress is tied to an account reached by a device token in `localStorage`, with no login; extra devices can be linked from the Armory.
+
+## Stack
+
+| Layer      | Choice                              |
+| ---------- | ----------------------------------- |
+| Server     | Node.js, Express                    |
+| Realtime   | WebSockets (`ws`)                   |
+| Client     | Vanilla JS, HTML5 Canvas            |
+| Transport  | Lobby over HTTP, gameplay over WS   |
+| Persistence| JSON file (`data/players.json`)     |
+
+## Running it
+
+```bash
+npm install
+npm start   # port 3000
+```
+
+Open `http://localhost:3000` on the host; other devices use the host's LAN IP
+(`http://192.168.x.x:3000`).
+
+## Notes and limitations
+
+The game needs a persistent Node process holding live state in memory, so it is
+**not** deployable to serverless platforms — it belongs on a VPS, Railway, Render,
+Fly.io, or your own machine. For play outside the LAN, a Cloudflare Tunnel
+publishes it at a public HTTPS hostname without opening any ports. There is no
+public demo link, so the repo is the way in.
