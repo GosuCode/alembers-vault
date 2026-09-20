@@ -2,15 +2,50 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import ProjectCard from "../../components/ProjectCard.astro";
 import { getCollection } from "astro:content";
+import { ordinal } from "../../lib/academic";
 
-const projects = (await getCollection("projects")).sort(
-  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
-);
+const all = await getCollection("projects");
+const byDate = (
+  a: (typeof all)[number],
+  b: (typeof all)[number],
+): number => b.data.pubDate.valueOf() - a.data.pubDate.valueOf();
+
+const semesterProjects = all
+  .filter((project) => project.data.program && project.data.semester)
+  .sort((a, b) => (a.data.semester ?? 0) - (b.data.semester ?? 0));
+const otherProjects = all
+  .filter((project) => !(project.data.program && project.data.semester))
+  .sort(byDate);
+
+const description =
+  "BCA semester projects and other builds — write-ups, reports, repositories, and live demos.";
+
+const jsonLd = [
+  {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "BCA Semester Projects",
+    description,
+    url: new URL("/projects/", Astro.site).href,
+    inLanguage: "en",
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    itemListElement: all.map((project, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: project.data.title,
+      url: new URL(`/projects/${project.id}/`, Astro.site).href,
+    })),
+  },
+];
 ---
 
 <BaseLayout
-  title="Projects · Alember's Vault"
-  description="BCA semester projects and other builds — write-ups, repositories, and live demos."
+  title="BCA Semester Projects & Builds · Alember's Vault"
+  description={description}
+  jsonLd={jsonLd}
 >
   <main class="mx-auto max-w-5xl px-6 py-14">
     <header class="max-w-2xl">
@@ -19,17 +54,63 @@ const projects = (await getCollection("projects")).sort(
         Projects
       </h1>
       <p class="mt-4 text-lg text-pencil">
-        BCA semester projects and other builds, with write-ups, repositories, and
-        live demos.
+        BCA semester projects and other builds, with write-ups, reports,
+        repositories, and live demos.
       </p>
     </header>
 
-    <div class="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-      {projects.map((project) => <ProjectCard project={project} />)}
-    </div>
+    <section class="mt-14">
+      <h2 class="font-hand text-3xl sketch-underline">BCA semester projects</h2>
+      <p class="mt-4 max-w-3xl text-pencil">
+        Final reports and write-ups from my <strong>Bachelor in Computer
+        Applications (BCA)</strong> under Tribhuvan University — the 4th, 6th, and
+        8th semester project work. Each entry links to the full report, proposal,
+        presentation, and the course guideline it was built against.
+      </p>
+
+      <ul class="mt-8 grid gap-6 sm:grid-cols-2">
+        {
+          semesterProjects.map((project) => (
+            <li class="card-paper flex flex-col p-6 pop">
+              <p class="font-hand text-xl text-accent">
+                BCA {ordinal(project.data.semester ?? 0)} semester project
+              </p>
+              <h3 class="mt-1 text-lg font-semibold leading-snug">
+                <a
+                  href={`/projects/${project.id}/`}
+                  class="transition-colors hover:text-accent"
+                >
+                  {project.data.title}
+                </a>
+              </h3>
+              <p class="mt-2 text-sm text-pencil">{project.data.description}</p>
+              <a
+                href={`/projects/${project.id}/`}
+                class="mt-auto pt-4 font-hand text-lg text-accent transition hover:text-accent-dark"
+              >
+                write-up &amp; report →
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
 
     {
-      projects.length === 0 && (
+      otherProjects.length > 0 && (
+        <section class="mt-16 border-t border-dashed border-line pt-10">
+          <h2 class="font-hand text-3xl sketch-underline">Other builds</h2>
+          <div class="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {otherProjects.map((project) => (
+              <ProjectCard project={project} />
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    {
+      all.length === 0 && (
         <p class="mt-12 font-hand text-2xl text-pencil">
           no projects yet — check back soon.
         </p>

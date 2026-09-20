@@ -47,6 +47,11 @@ const {
 
 const semesterLabel = semester ? `${ordinal(semester)} semester` : null;
 const programLabel = program ? `${program}${semesterLabel ? ` · ${semesterLabel}` : ""}` : semesterLabel;
+
+const seoTitle =
+  program && semester
+    ? `${title} · ${program} ${ordinal(semester)} Semester Project`
+    : `${title} · ${program ? `${program} ` : ""}Projects`;
 const yearLabel = year
   ? `${yearBs ? `${yearBs} BS · ` : ""}${year} AD`
   : null;
@@ -102,7 +107,7 @@ const jsonLd = [
 ---
 
 <BaseLayout
-  title={`${title} · ${program ? `${program} ` : ""}Projects`}
+  title={seoTitle}
   description={description}
   jsonLd={jsonLd}
 >
