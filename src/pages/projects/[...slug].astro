@@ -50,7 +50,7 @@ const programLabel = program ? `${program}${semesterLabel ? ` · ${semesterLabel
 
 const seoTitle =
   program && semester
-    ? `${title} · ${program} ${ordinal(semester)} Semester Project`
+    ? `${title} · ${program} ${ordinal(semester)} Semester ${tags.includes("internship") ? "Internship" : "Project"}`
     : `${title} · ${program ? `${program} ` : ""}Projects`;
 const yearLabel = year
   ? `${yearBs ? `${yearBs} BS · ` : ""}${year} AD`

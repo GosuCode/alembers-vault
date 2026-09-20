@@ -73,7 +73,10 @@ const jsonLd = [
           semesterProjects.map((project) => (
             <li class="card-paper flex flex-col p-6 pop">
               <p class="font-hand text-xl text-accent">
-                BCA {ordinal(project.data.semester ?? 0)} semester project
+                BCA {ordinal(project.data.semester ?? 0)} semester{" "}
+                {project.data.tags.includes("internship")
+                  ? "internship"
+                  : "project"}
               </p>
               <h3 class="mt-1 text-lg font-semibold leading-snug">
                 <a
