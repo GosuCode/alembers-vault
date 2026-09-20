@@ -115,6 +115,10 @@ pnpm ocr --limit 5       # try a few first
 
 Then rebuild/redeploy so the text lands in the HTML.
 
+Status: all 23 BCA papers are OCR'd (1.3k–5.2k chars each); their text is
+rendered in the "Paper text" section of each paper page. Re-run `pnpm ocr`
+after uploading new scans, then redeploy.
+
 ### Google Search Console
 
 1. Add a property for `vault.shreeshalember.com.np` (Domain property; verify with
