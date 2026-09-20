@@ -35,6 +35,9 @@ function semesterLabel(semester: number | null): string {
   return semester ? `Semester ${semester}` : "Unsorted";
 }
 
+/** How many papers show per semester group before a "show more" button. */
+const GROUP_PAGE = 6;
+
 interface Props {
   initialResources?: AcademicResource[];
 }
@@ -53,6 +56,12 @@ export default function AcademicExplorer({
   const [semester, setSemester] = useState("all");
   const [year, setYear] = useState("all");
   const [selected, setSelected] = useState<AcademicResource | null>(null);
+  const [expanded, setExpanded] = useState<Record<string, number>>({});
+
+  // Reset "show more" pagination whenever the filters change.
+  useEffect(() => {
+    setExpanded({});
+  }, [query, category, semester, year]);
 
   // Refresh from Supabase on load so uploads show without a rebuild.
   useEffect(() => {
@@ -220,68 +229,91 @@ export default function AcademicExplorer({
         <p className="text-pencil">Nothing matches that filter.</p>
       ) : (
         <div className="flex flex-col gap-12">
-          {groups.map(([semesterValue, items]) => (
-            <section key={semesterValue ?? "unsorted"}>
-              <div className="flex items-center gap-4">
-                <h2 className="font-hand text-3xl whitespace-nowrap">
-                  {semesterLabel(semesterValue)}
-                </h2>
-                <span className="font-hand text-lg text-pencil">
-                  {items.length} paper{items.length === 1 ? "" : "s"}
-                </span>
-                <span className="h-px flex-1 bg-line" />
-              </div>
+          {groups.map(([semesterValue, items]) => {
+            const groupKey = String(semesterValue ?? "unsorted");
+            const shown = expanded[groupKey] ?? GROUP_PAGE;
+            const visibleItems = items.slice(0, shown);
+            const remaining = items.length - visibleItems.length;
+            return (
+              <section key={groupKey}>
+                <div className="flex items-center gap-4">
+                  <h2 className="font-hand text-3xl whitespace-nowrap">
+                    {semesterLabel(semesterValue)}
+                  </h2>
+                  <span className="font-hand text-lg text-pencil">
+                    {items.length} paper{items.length === 1 ? "" : "s"}
+                    {items.length > GROUP_PAGE &&
+                      ` · showing ${visibleItems.length}`}
+                  </span>
+                  <span className="h-px flex-1 bg-line" />
+                </div>
 
-              <ul className="mt-5 grid gap-4 sm:grid-cols-2">
-                {items.map((resource) => (
-                  <li
-                    key={resource.id}
-                    className="relative"
-                  >
-                    <a
-                      href={`/academic/${slugFor(resource)}/`}
-                      className="relative flex h-full flex-col rounded-lg border border-ink/80 bg-white p-5 pr-20 pop-sm transition duration-200 hover:-translate-y-1"
+                <ul className="mt-5 grid gap-4 sm:grid-cols-2">
+                  {visibleItems.map((resource) => (
+                    <li
+                      key={resource.id}
+                      className="relative"
                     >
-                      <h3 className="text-base font-semibold leading-snug">
-                        {resource.title}
-                      </h3>
-                      {resource.description ? (
-                        <p className="mt-2 line-clamp-2 text-sm text-pencil">
-                          {resource.description}
-                        </p>
-                      ) : null}
-                      <div className="mt-auto flex flex-wrap items-center gap-2 pt-4 font-hand text-base text-pencil">
-                        <span className="rounded-full border border-dashed border-pencil/50 px-2.5 py-0.5 leading-tight">
-                          {fileKind(resource)}
+                      <a
+                        href={`/academic/${slugFor(resource)}/`}
+                        className="relative flex h-full flex-col rounded-lg border border-ink/80 bg-white p-5 pr-20 pop-sm transition duration-200 hover:-translate-y-1"
+                      >
+                        <h3 className="text-base font-semibold leading-snug">
+                          {resource.title}
+                        </h3>
+                        {resource.description ? (
+                          <p className="mt-2 line-clamp-2 text-sm text-pencil">
+                            {resource.description}
+                          </p>
+                        ) : null}
+                        <div className="mt-auto flex flex-wrap items-center gap-2 pt-4 font-hand text-base text-pencil">
+                          <span className="rounded-full border border-dashed border-pencil/50 px-2.5 py-0.5 leading-tight">
+                            {fileKind(resource)}
+                          </span>
+                          {resource.course ? (
+                            <span className="rounded-full border border-dashed border-pencil/50 px-2.5 py-0.5 leading-tight">
+                              {resource.course}
+                            </span>
+                          ) : null}
+                          {resource.year ? (
+                            <span className="rounded-full border border-dashed border-pencil/50 px-2.5 py-0.5 leading-tight">
+                              {resource.year}
+                            </span>
+                          ) : null}
+                        </div>
+                        <span className="mt-3 font-hand text-lg text-accent">
+                          open paper →
                         </span>
-                        {resource.course ? (
-                          <span className="rounded-full border border-dashed border-pencil/50 px-2.5 py-0.5 leading-tight">
-                            {resource.course}
-                          </span>
-                        ) : null}
-                        {resource.year ? (
-                          <span className="rounded-full border border-dashed border-pencil/50 px-2.5 py-0.5 leading-tight">
-                            {resource.year}
-                          </span>
-                        ) : null}
-                      </div>
-                      <span className="mt-3 font-hand text-lg text-accent">
-                        open paper →
-                      </span>
-                    </a>
-                    <button
-                      type="button"
-                      onClick={() => setSelected(resource)}
-                      aria-label={`Quick preview: ${resource.title}`}
-                      className="absolute right-3 top-3 z-10 rounded-md border border-ink/70 bg-white px-2.5 py-1 font-hand text-base leading-tight transition hover:bg-marker"
-                    >
-                      preview
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ))}
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => setSelected(resource)}
+                        aria-label={`Quick preview: ${resource.title}`}
+                        className="absolute right-3 top-3 z-10 rounded-md border border-ink/70 bg-white px-2.5 py-1 font-hand text-base leading-tight transition hover:bg-marker"
+                      >
+                        preview
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+
+                {remaining > 0 && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setExpanded((current) => ({
+                        ...current,
+                        [groupKey]: shown + GROUP_PAGE,
+                      }))
+                    }
+                    className="mt-5 rounded-md border border-ink/70 bg-white px-4 py-1.5 font-hand text-lg leading-tight pop-sm transition hover:-translate-y-0.5 hover:bg-marker"
+                  >
+                    show {Math.min(remaining, GROUP_PAGE)} more →
+                  </button>
+                )}
+              </section>
+            );
+          })}
         </div>
       )}
 

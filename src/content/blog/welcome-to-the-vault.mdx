@@ -1,31 +1,81 @@
 ---
 title: "Welcome to Alember's Vault"
-description: "Why I built a personal archive for blogs, papers, and projects — and what's coming next."
+description: "Why I finally built a home for my papers, projects, and writing — a weekend and a lot of AI tooling later."
 pubDate: 2026-09-19
 tags: ["meta", "astro"]
 heroImage: "./welcome-to-the-vault.hero.png"
 heroImageAlt: "A dark-to-amber gradient banner"
 ---
 
-Welcome to **Alember's Vault** — a single home for the things I build, study,
-and write about.
+Welcome to **Alember's Vault** — one home for the things I build, study, and
+write about. It has been an idea in my head for years, and a real website for
+about a weekend.
 
-## What lives here
+Here's the honest version of why it exists.
 
-- **Tech blogs** — notes from projects, tooling, and things I had to learn the
-  hard way.
-- **Academic archive** — past papers and project PDFs, browsable and
-  previewable in the browser.
-- **Project showcase** — write-ups with repository and live-demo links.
+## The plan that kept getting postponed
 
-## Why not a pile of folders?
+I always wanted a personal site. Not a portfolio that says "passionate
+developer" three times, but a place where my actual work lives: papers, project
+reports, half-finished experiments, notes from things I had to learn the hard
+way.
 
-Because a pile of folders is where notes go to die. This site is content-first:
-pages are pre-rendered at build time, so it stays fast and cheap to host.
+Every year I'd start sketching it, then work would show up, college would show
+up, and the plan would go back in the drawer. Building a site like this used to
+mean weeks of setup before you have *anything* to show.
+
+## What changed: AI tooling
+
+This is the part that finally made it happen. With help from
+**Claude, opencode, Cursor, and Antigravity**, the boring parts — boilerplate,
+layouts, wiring up storage, chasing build errors — stopped being the reason to
+delay. I could describe what I wanted, iterate on it, and have a working site in
+a day, on a weekend.
+
+To be clear: the tools typed a lot of the code. The decisions, the design, the
+structure, and the words are mine. It's the difference between a faster
+hammer and a house that builds itself.
+
+## Why I wanted it
+
+Three simple reasons:
+
+- **To help fellow BCA students.** I have past question papers, semester
+  project reports, an internship report, proposals, presentations — the stuff
+  everyone needs and nobody can find. Instead of sitting in my folders, they're
+  now searchable and previewable right in the browser, for free.
+- **To own my writing.** I started publishing on Medium and enjoyed it, but I
+  wanted my posts on a site I actually control — with my own layout, my own
+  links, no algorithm deciding who sees them.
+- **To keep a record.** Projects and lessons fade fast. Writing them down here
+  means I remember what I built, why I made the choices I did, and what I'd do
+  differently.
+
+## What's inside
+
+- **Academic archive** — Tribhuvan University BCA past papers with searchable
+  text, plus semester project documents and course guidelines.
+- **Projects** — real write-ups with reports, screenshots, diagrams, and
+  repository or live links.
+- **Blogs** — notes on Node, Docker, Redis, CORS, deployment and whatever else
+  I bump into next.
+
+## Under the hood (short version)
+
+Astro and Tailwind keep it fast and mostly static, Supabase holds the files,
+and Cloudflare serves it. If you like that kind of detail, the code is on
+[GitHub](https://github.com/GosuCode/alembers-vault) and the roadmap is right
+there in the repo.
 
 ```ts
 const vault = ["blogs", "academic", "projects"];
 console.log(vault.join(" · "));
 ```
 
-More soon.
+## What's next
+
+More past papers as I get them, more project write-ups, and — eventually —
+whatever I'm learning in public. If you're a BCA student and something here
+saves you an evening, that's the whole point of building it.
+
+Thanks for stopping by.

@@ -6,6 +6,15 @@ import { getCollection } from "astro:content";
 const posts = (await getCollection("blog", ({ data }) => !data.draft)).sort(
   (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 );
+
+const tags = [...new Set(posts.flatMap((post) => post.data.tags))].sort();
+
+const searchIndex = (post: (typeof posts)[number]) =>
+  [post.data.title, post.data.description, post.data.tags.join(" ")]
+    .join(" ")
+    .toLowerCase();
+
+const POSTS_PER_PAGE = 9;
 ---
 
 <BaseLayout
@@ -18,14 +27,72 @@ const posts = (await getCollection("blog", ({ data }) => !data.draft)).sort(
       <h1 class="mt-1 text-4xl font-semibold tracking-tight sm:text-5xl">
         Blogs
       </h1>
-      <p class="mt-4 text-lg text-pencil">
-        Notes on building software, tooling, and things learned the hard way.
-      </p>
     </header>
 
-    <div class="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-      {posts.map((post) => <BlogCard post={post} />)}
+    {
+      posts.length > 0 && (
+        <div class="mt-6 flex flex-wrap items-end gap-4">
+          <div class="min-w-[240px] flex-1">
+            <label class="block">
+              <span class="sr-only">Search posts</span>
+              <input
+                id="blog-search"
+                type="search"
+                placeholder="Search posts by title, description, or tag…"
+                class="w-full rounded-md border border-ink/70 bg-white px-4 py-2.5 text-sm text-ink pop-sm transition placeholder:text-pencil/70 focus:border-accent focus:outline-none"
+              />
+            </label>
+          </div>
+          <label class="flex flex-col gap-1.5">
+            <span class="font-hand text-lg leading-none text-pencil">tag</span>
+            <select
+              id="blog-tag"
+              class="rounded-md border border-ink/70 bg-white px-3 py-2.5 text-sm text-ink pop-sm transition focus:border-accent focus:outline-none"
+            >
+              <option value="all">All tags</option>
+              {tags.map((tag) => <option value={tag}>{tag}</option>)}
+            </select>
+          </label>
+        </div>
+      )
+    }
+
+    <p
+      id="blog-count"
+      class="mt-4 font-hand text-xl text-pencil"
+      aria-live="polite"
+    >
+      {posts.length} posts
+    </p>
+
+    <div
+      id="blog-grid"
+      class="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3"
+      data-per-page={POSTS_PER_PAGE}
+    >
+      {
+        posts.map((post) => (
+          <div
+            class="blog-item"
+            data-search={searchIndex(post)}
+            data-tags={post.data.tags.join(",")}
+          >
+            <BlogCard post={post} />
+          </div>
+        ))
+      }
     </div>
+
+    <p id="blog-empty" class="mt-10 hidden text-pencil">
+      Nothing matches that search.
+    </p>
+
+    <nav
+      id="blog-pagination"
+      class="mt-10 flex flex-wrap items-center justify-center gap-2"
+      aria-label="Blog pagination"
+    >
+    </nav>
 
     {
       posts.length === 0 && (
@@ -35,4 +102,85 @@ const posts = (await getCollection("blog", ({ data }) => !data.draft)).sort(
       )
     }
   </main>
+
+  <script>
+    const grid = document.getElementById("blog-grid");
+    const search = document.getElementById("blog-search") as HTMLInputElement | null;
+    const tagSelect = document.getElementById("blog-tag") as HTMLSelectElement | null;
+    const count = document.getElementById("blog-count");
+    const empty = document.getElementById("blog-empty");
+    const pagination = document.getElementById("blog-pagination");
+
+    if (grid && search && tagSelect && count && empty && pagination) {
+      const items = Array.from(grid.querySelectorAll<HTMLElement>(".blog-item"));
+      const perPage = Number(grid.dataset.perPage) || 6;
+      let page = 1;
+
+      const button = (label: string, target: number, current: boolean, disabled = false) => {
+        const el = document.createElement("button");
+        el.type = "button";
+        el.textContent = label;
+        el.dataset.page = String(target);
+        el.disabled = disabled;
+        el.setAttribute("aria-label", `Page ${target}`);
+        if (current) el.setAttribute("aria-current", "page");
+        el.className = [
+          "rounded-md border border-ink/70 px-3 py-1 font-hand text-lg leading-tight transition",
+          current ? "bg-accent text-white" : "bg-white hover:bg-marker",
+          disabled ? "cursor-default opacity-40" : "hover:-translate-y-0.5",
+        ].join(" ");
+        return el;
+      };
+
+      const render = () => {
+        const query = search.value.trim().toLowerCase();
+        const tag = tagSelect.value;
+        const matched = items.filter((item) => {
+          const haystack = item.dataset.search ?? "";
+          const itemTags = (item.dataset.tags ?? "").split(",");
+          return (!query || haystack.includes(query)) && (tag === "all" || itemTags.includes(tag));
+        });
+
+        const pages = Math.max(1, Math.ceil(matched.length / perPage));
+        if (page > pages) page = pages;
+
+        items.forEach((item) => item.classList.add("hidden"));
+        matched
+          .slice((page - 1) * perPage, page * perPage)
+          .forEach((item) => item.classList.remove("hidden"));
+
+        count.textContent =
+          matched.length === items.length
+            ? `${items.length} posts`
+            : `${matched.length} of ${items.length} posts`;
+        empty.classList.toggle("hidden", matched.length > 0);
+
+        pagination.replaceChildren();
+        if (pages <= 1) return;
+        pagination.append(button("← prev", page - 1, false, page === 1));
+        for (let index = 1; index <= pages; index += 1) {
+          pagination.append(button(String(index), index, index === page));
+        }
+        pagination.append(button("next →", page + 1, false, page === pages));
+      };
+
+      search.addEventListener("input", () => {
+        page = 1;
+        render();
+      });
+      tagSelect.addEventListener("change", () => {
+        page = 1;
+        render();
+      });
+      pagination.addEventListener("click", (event) => {
+        const target = (event.target as HTMLElement).closest<HTMLButtonElement>("button[data-page]");
+        if (!target || target.disabled) return;
+        page = Number(target.dataset.page);
+        render();
+        grid.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+
+      render();
+    }
+  </script>
 </BaseLayout>
