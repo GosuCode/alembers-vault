@@ -13,12 +13,12 @@ const byDate = (
 const semesterProjects = all
   .filter((project) => project.data.program && project.data.semester)
   .sort((a, b) => (a.data.semester ?? 0) - (b.data.semester ?? 0));
-const otherProjects = all
+const personalProjects = all
   .filter((project) => !(project.data.program && project.data.semester))
   .sort(byDate);
 
 const description =
-  "BCA semester projects and other builds — write-ups, reports, repositories, and live demos.";
+  "BCA semester projects and personal projects — write-ups, reports, repositories, and live demos.";
 
 const jsonLd = [
   {
@@ -43,7 +43,7 @@ const jsonLd = [
 ---
 
 <BaseLayout
-  title="BCA Semester Projects & Builds · Alember's Vault"
+  title="BCA Semester Projects & Personal Projects · Alember's Vault"
   description={description}
   jsonLd={jsonLd}
 >
@@ -54,7 +54,7 @@ const jsonLd = [
         Projects
       </h1>
       <p class="mt-4 text-lg text-pencil">
-        BCA semester projects and other builds, with write-ups, reports,
+        BCA semester projects and personal projects, with write-ups, reports,
         repositories, and live demos.
       </p>
     </header>
@@ -97,11 +97,11 @@ const jsonLd = [
     </section>
 
     {
-      otherProjects.length > 0 && (
+      personalProjects.length > 0 && (
         <section class="mt-16 border-t border-dashed border-line pt-10">
-          <h2 class="font-hand text-3xl sketch-underline">Other builds</h2>
+          <h2 class="font-hand text-3xl sketch-underline">Personal projects</h2>
           <div class="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {otherProjects.map((project) => (
+            {personalProjects.map((project) => (
               <ProjectCard project={project} />
             ))}
           </div>
