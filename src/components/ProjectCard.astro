@@ -8,10 +8,21 @@ interface Props {
 }
 
 const { project } = Astro.props;
-const { title, description, tags, links, featured, semester, status, heroImage } =
-  project.data;
+const {
+  title,
+  description,
+  tags,
+  links,
+  featured,
+  program,
+  semester,
+  status,
+  heroImage,
+} = project.data;
 
-const semesterLabel = semester ? `${ordinal(semester)} sem` : null;
+const semesterLabel = semester
+  ? `${program ? `${program} · ` : ""}${ordinal(semester)} sem`
+  : program;
 const statusLabel =
   status === "archived"
     ? "not maintained"

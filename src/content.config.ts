@@ -26,6 +26,7 @@ const projects = defineCollection({
       pubDate: z.coerce.date(),
       tags: z.array(z.string()).default([]),
       featured: z.boolean().default(false),
+      program: z.string().optional(),
       semester: z.number().int().min(1).max(12).optional(),
       year: z.number().int().optional(),
       yearBs: z.number().int().optional(),

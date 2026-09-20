@@ -34,6 +34,7 @@ const {
   tags,
   links,
   reports,
+  program,
   semester,
   year,
   yearBs,
@@ -45,6 +46,7 @@ const {
 } = project.data;
 
 const semesterLabel = semester ? `${ordinal(semester)} semester` : null;
+const programLabel = program ? `${program}${semesterLabel ? ` · ${semesterLabel}` : ""}` : semesterLabel;
 const yearLabel = year
   ? `${yearBs ? `${yearBs} BS · ` : ""}${year} AD`
   : null;
@@ -99,7 +101,11 @@ const jsonLd = [
 ];
 ---
 
-<BaseLayout title={`${title} · Projects`} description={description} jsonLd={jsonLd}>
+<BaseLayout
+  title={`${title} · ${program ? `${program} ` : ""}Projects`}
+  description={description}
+  jsonLd={jsonLd}
+>
   <main class="mx-auto max-w-3xl px-6 py-12">
     <a
       href="/projects/"
@@ -113,10 +119,10 @@ const jsonLd = [
         <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
           <p class="font-hand text-xl text-pencil">{formatDate(pubDate)}</p>
           {
-            (semesterLabel || yearLabel) && (
+            (programLabel || yearLabel) && (
               <p class="font-hand text-xl text-pencil">
-                {semesterLabel}
-                {semesterLabel && yearLabel && " · "}
+                {programLabel}
+                {programLabel && yearLabel && " · "}
                 {yearLabel}
               </p>
             )
