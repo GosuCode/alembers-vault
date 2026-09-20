@@ -13,6 +13,12 @@ export default defineConfig({
   site: 'https://vault.shreeshalember.com.np',
   integrations: [react(), mdx(), sitemap()],
 
+  markdown: {
+    shikiConfig: {
+      theme: 'github-light',
+    },
+  },
+
   vite: {
     plugins: [tailwindcss()]
   }

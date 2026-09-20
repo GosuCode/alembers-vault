@@ -14,6 +14,7 @@ const blog = defineCollection({
       draft: z.boolean().default(false),
       heroImage: image().optional(),
       heroImageAlt: z.string().optional(),
+      sourceUrl: z.url().optional(),
     }),
 });
 
