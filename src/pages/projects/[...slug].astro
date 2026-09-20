@@ -2,6 +2,8 @@
 import { Image } from "astro:assets";
 import { getCollection, render, type CollectionEntry } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import BlogCard from "../../components/BlogCard.astro";
+import ProjectCard from "../../components/ProjectCard.astro";
 import { formatDate } from "../../lib/format";
 import { ordinal } from "../../lib/academic";
 import {
@@ -14,18 +16,62 @@ import { academicFileUrl } from "../../lib/supabase";
 import { site } from "../../data/site";
 
 export async function getStaticPaths() {
-  const projects = await getCollection("projects");
-  return projects.map((project) => ({
-    params: { slug: project.id },
-    props: { project },
-  }));
+  const [projects, posts] = await Promise.all([
+    getCollection("projects"),
+    getCollection("blog", ({ data }) => !data.draft),
+  ]);
+
+  // Declared inside getStaticPaths: Astro extracts this function, so it can't
+  // reach module-level helpers at build time.
+  const normalize = (tag: string) =>
+    tag === "postgresql" ? "postgres" : tag === "nextjs" ? "next" : tag;
+
+  return projects.map((project) => {
+    const { program, semester, tags } = project.data;
+
+    const moreProjects = projects
+      .filter((candidate) => candidate.id !== project.id)
+      .sort((a, b) => {
+        const sameProgram = (entry: CollectionEntry<"projects">) =>
+          program && entry.data.program === program ? 0 : 1;
+        const semesterDistance = (entry: CollectionEntry<"projects">) =>
+          semester && entry.data.semester
+            ? Math.abs(entry.data.semester - semester)
+            : 99;
+        return (
+          sameProgram(a) - sameProgram(b) ||
+          semesterDistance(a) - semesterDistance(b) ||
+          b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+        );
+      })
+      .slice(0, 3);
+
+    const projectTags = new Set(tags.map(normalize));
+    const matchCount = (post: CollectionEntry<"blog">) =>
+      post.data.tags.filter((tag) => projectTags.has(normalize(tag))).length;
+
+    const relatedPosts = posts
+      .sort(
+        (a, b) =>
+          matchCount(b) - matchCount(a) ||
+          b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+      )
+      .slice(0, 3);
+
+    return {
+      params: { slug: project.id },
+      props: { project, moreProjects, relatedPosts },
+    };
+  });
 }
 
 interface Props {
   project: CollectionEntry<"projects">;
+  moreProjects: CollectionEntry<"projects">[];
+  relatedPosts: CollectionEntry<"blog">[];
 }
 
-const { project } = Astro.props;
+const { project, moreProjects, relatedPosts } = Astro.props;
 const { Content } = await render(project);
 const {
   title,
@@ -274,6 +320,48 @@ const jsonLd = [
                     {item.caption}
                   </figcaption>
                 </figure>
+              ))}
+            </div>
+          </section>
+        )
+      }
+
+      {
+        moreProjects.length > 0 && (
+          <section class="mt-12 border-t border-dashed border-line pt-8">
+            <div class="flex flex-wrap items-end justify-between gap-3">
+              <h2 class="font-hand text-3xl sketch-underline">more projects</h2>
+              <a
+                href="/projects/"
+                class="font-hand text-xl text-accent transition hover:text-accent-dark"
+              >
+                all projects →
+              </a>
+            </div>
+            <div class="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {moreProjects.map((item) => (
+                <ProjectCard project={item} />
+              ))}
+            </div>
+          </section>
+        )
+      }
+
+      {
+        relatedPosts.length > 0 && (
+          <section class="mt-12 border-t border-dashed border-line pt-8">
+            <div class="flex flex-wrap items-end justify-between gap-3">
+              <h2 class="font-hand text-3xl sketch-underline">from the blog</h2>
+              <a
+                href="/blogs/"
+                class="font-hand text-xl text-accent transition hover:text-accent-dark"
+              >
+                all blogs →
+              </a>
+            </div>
+            <div class="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {relatedPosts.map((post) => (
+                <BlogCard post={post} />
               ))}
             </div>
           </section>

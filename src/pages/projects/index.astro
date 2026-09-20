@@ -63,35 +63,33 @@ const jsonLd = [
       <h2 class="font-hand text-3xl sketch-underline">BCA semester projects</h2>
       <p class="mt-4 max-w-3xl text-pencil">
         Final reports and write-ups from my <strong>Bachelor in Computer
-        Applications (BCA)</strong> under Tribhuvan University — the 4th, 6th, and
-        8th semester project work. Each entry links to the full report, proposal,
-        presentation, and the course guideline it was built against.
+        Applications (BCA)</strong> under Tribhuvan University — the 4th, 6th,
+        7th (internship), and 8th semester work. Each entry links to the full
+        report, proposal, presentation, and the course guideline it was built
+        against.
       </p>
 
       <ul class="mt-8 grid gap-6 sm:grid-cols-2">
         {
           semesterProjects.map((project) => (
-            <li class="card-paper flex flex-col p-6 pop">
-              <p class="font-hand text-xl text-accent">
-                BCA {ordinal(project.data.semester ?? 0)} semester{" "}
-                {project.data.tags.includes("internship")
-                  ? "internship"
-                  : "project"}
-              </p>
-              <h3 class="mt-1 text-lg font-semibold leading-snug">
-                <a
-                  href={`/projects/${project.id}/`}
-                  class="transition-colors hover:text-accent"
-                >
-                  {project.data.title}
-                </a>
-              </h3>
-              <p class="mt-2 text-sm text-pencil">{project.data.description}</p>
+            <li class="flex">
               <a
                 href={`/projects/${project.id}/`}
-                class="mt-auto pt-4 font-hand text-lg text-accent transition hover:text-accent-dark"
+                class="group flex h-full w-full flex-col card-paper p-6 pop transition duration-200 hover:-translate-y-1 hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-paper"
               >
-                write-up &amp; report →
+                <p class="font-hand text-xl text-accent">
+                  BCA {ordinal(project.data.semester ?? 0)} semester{" "}
+                  {project.data.tags.includes("internship")
+                    ? "internship"
+                    : "project"}
+                </p>
+                <h3 class="mt-1 text-lg font-semibold leading-snug transition-colors group-hover:text-accent">
+                  {project.data.title}
+                </h3>
+                <p class="mt-2 text-sm text-pencil">{project.data.description}</p>
+                <span class="mt-auto inline-flex items-center gap-1 pt-4 font-hand text-lg text-accent transition group-hover:translate-x-0.5 group-hover:text-accent-dark">
+                  write-up &amp; report →
+                </span>
               </a>
             </li>
           ))
