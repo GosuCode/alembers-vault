@@ -1,11 +1,29 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { site } from "../data/site";
+
+const sections = [
+  {
+    href: "/academic/",
+    title: "Academic archive",
+    body: "Tribhuvan University BCA past papers with searchable text, plus project reports and course guidelines.",
+  },
+  {
+    href: "/projects/",
+    title: "Projects",
+    body: "Semester projects, the internship, and personal builds — with reports, diagrams and live links.",
+  },
+  {
+    href: "/blogs/",
+    title: "Blogs",
+    body: "Notes on Node.js, Docker, Redis, CORS, deployment and everything else I bump into.",
+  },
+];
 ---
 
 <BaseLayout
   title={`About · ${site.name}`}
-  description={`About ${site.name} and this archive.`}
+  description={`About ${site.name} — ${site.role.toLowerCase()}, and the archive they built.`}
 >
   <main class="mx-auto max-w-3xl px-6 py-14">
     <header class="grid gap-8 sm:grid-cols-[1fr_auto] sm:items-start">
@@ -50,6 +68,26 @@ import { site } from "../data/site";
       </div>
 
       <section class="mt-12">
+        <h2 class="font-hand text-3xl sketch-underline">what I work with</h2>
+        <div class="mt-5 grid gap-4 sm:grid-cols-2">
+          {
+            site.skills.map((group) => (
+              <div class="card-paper p-4 pop-sm">
+                <p class="font-hand text-xl text-accent">{group.label}</p>
+                <ul class="mt-2 flex flex-wrap gap-2">
+                  {group.items.map((item) => (
+                    <li class="rounded-full border border-dashed border-pencil/50 px-2.5 py-0.5 font-hand text-base leading-tight text-pencil">
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))
+          }
+        </div>
+      </section>
+
+      <section class="mt-12">
         <h2 class="font-hand text-3xl sketch-underline">right now</h2>
         <ul class="mt-5 space-y-2">
           {
@@ -57,6 +95,29 @@ import { site } from "../data/site";
               <li class="flex gap-3">
                 <span class="text-accent">·</span>
                 <span>{item}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+
+      <section class="mt-12">
+        <h2 class="font-hand text-3xl sketch-underline">on this site</h2>
+        <ul class="mt-5 grid gap-3">
+          {
+            sections.map((section) => (
+              <li>
+                <a
+                  href={section.href}
+                  class="group block rounded-lg border border-ink/60 bg-white px-4 py-3 transition hover:-translate-y-0.5 hover:border-accent"
+                >
+                  <span class="font-semibold transition-colors group-hover:text-accent">
+                    {section.title}
+                  </span>
+                  <span class="mt-1 block text-sm text-pencil">
+                    {section.body}
+                  </span>
+                </a>
               </li>
             ))
           }

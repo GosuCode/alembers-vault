@@ -4,6 +4,7 @@ import BlogCard from "../components/BlogCard.astro";
 import ProjectCard from "../components/ProjectCard.astro";
 import { getCollection } from "astro:content";
 import { site } from "../data/site";
+import { fetchAcademicResources } from "../lib/academic";
 
 const posts = (await getCollection("blog", ({ data }) => !data.draft)).sort(
   (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
@@ -11,6 +12,10 @@ const posts = (await getCollection("blog", ({ data }) => !data.draft)).sort(
 const projects = (await getCollection("projects")).sort(
   (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 );
+
+const resourceCount = (await fetchAcademicResources()).filter(
+  (resource) => resource.category !== "project-pdf",
+).length;
 
 const latestPosts = posts.slice(0, 3);
 const featuredProjects = projects.slice(0, 2);
@@ -20,6 +25,9 @@ const topics = new Set(posts.flatMap((post) => post.data.tags));
 const stats = [
   { label: "blog posts", value: String(posts.length) },
   { label: "projects", value: String(projects.length) },
+  ...(resourceCount > 0
+    ? [{ label: "past papers", value: String(resourceCount) }]
+    : []),
   { label: "topics", value: String(topics.size) },
 ];
 ---
@@ -32,8 +40,8 @@ const stats = [
         <h1
           class="mt-2 text-4xl font-semibold leading-[1.08] tracking-tight sm:text-5xl"
         >
-          I'm {site.shortName}. I keep <span class="marker">notes</span> on the
-          things I build and study.
+          I'm {site.shortName}. I build <span class="marker">backend
+          systems</span>, break them, and write down what I figure out.
         </h1>
         <p class="mt-6 max-w-xl text-lg text-pencil">
           {site.bio[0]}
@@ -49,7 +57,13 @@ const stats = [
             href="/academic/"
             class="rounded-md border border-ink/80 bg-white px-5 py-2.5 text-sm font-semibold pop-sm transition hover:-translate-y-0.5"
           >
-            browse the archive
+            browse past papers
+          </a>
+          <a
+            href="/projects/"
+            class="rounded-md border border-ink/80 bg-white px-5 py-2.5 text-sm font-semibold pop-sm transition hover:-translate-y-0.5"
+          >
+            see projects
           </a>
         </div>
       </div>
@@ -85,7 +99,7 @@ const stats = [
       </aside>
     </section>
 
-    <dl class="grid gap-4 sm:grid-cols-3">
+    <dl class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {
         stats.map((stat, index) => (
           <div
