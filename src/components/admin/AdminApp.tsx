@@ -1,16 +1,30 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type JSX } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { getAuthClient, isAdmin, signOut } from "../../lib/admin";
+import ActivityLog from "./ActivityLog";
+import Leaderboard from "./Leaderboard";
+import Links from "./Links";
 import LoginForm from "./LoginForm";
 import Overview from "./Overview";
 import Visitors from "./Visitors";
 
-type Tab = "overview" | "visitors";
+type Tab = "overview" | "visitors" | "activity" | "links" | "content";
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "overview", label: "overview" },
   { id: "visitors", label: "visitors" },
+  { id: "activity", label: "activity" },
+  { id: "links", label: "links" },
+  { id: "content", label: "content" },
 ];
+
+const PANELS: Record<Tab, () => JSX.Element> = {
+  overview: Overview,
+  visitors: Visitors,
+  activity: ActivityLog,
+  links: Links,
+  content: Leaderboard,
+};
 
 export default function AdminApp() {
   const [session, setSession] = useState<Session | null>(null);
@@ -111,7 +125,10 @@ export default function AdminApp() {
         </div>
       </div>
 
-      {tab === "overview" ? <Overview /> : <Visitors />}
+      {(() => {
+        const Panel = PANELS[tab];
+        return <Panel />;
+      })()}
     </div>
   );
 }

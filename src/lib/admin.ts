@@ -163,4 +163,5 @@ export interface EventRow {
   content_slug: string | null;
   content_type: string | null;
   visitor_hash: string | null;
+  meta: Record<string, unknown> | null;
 }

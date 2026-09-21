@@ -320,6 +320,12 @@ RLS — not the client guard — is the real gate: dashboards read the `analytic
 `top_links`, `downloads`, `content_leaderboard`, `search_terms`) via
 `public.is_admin()`.
 
+Tabs: **overview** (cards + pageview chart + top pages/sources), **visitors**
+(recent visits + geo/device/referrer breakdowns), **activity** (raw event stream
+with type/range/country/text filters, pagination, CSV export), **links**
+(most-clicked + downloads), **content** (per-content leaderboard + search terms,
+including zero-result searches).
+
 Before magic links work, set the Auth URLs in the Supabase dashboard →
 **Authentication → URL Configuration**:
 
