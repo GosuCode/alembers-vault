@@ -20,16 +20,13 @@ const resourceCount = (await fetchAcademicResources()).filter(
 const latestPosts = posts.slice(0, 3);
 const featuredProjects = projects.slice(0, 2);
 
-const topics = new Set(posts.flatMap((post) => post.data.tags));
-
-const stats = [
-  { label: "blog posts", value: String(posts.length) },
-  { label: "projects", value: String(projects.length) },
-  ...(resourceCount > 0
-    ? [{ label: "past papers", value: String(resourceCount) }]
-    : []),
-  { label: "topics", value: String(topics.size) },
-];
+const metrics = [
+  { href: "/academic/", label: "past papers", value: resourceCount },
+  { href: "/projects/", label: "projects", value: projects.length },
+  { href: "/blogs/", label: "blog posts", value: posts.length },
+]
+  .filter((metric) => metric.value > 0)
+  .map((metric) => ({ ...metric, value: String(metric.value) }));
 ---
 
 <BaseLayout>
@@ -40,11 +37,12 @@ const stats = [
         <h1
           class="mt-2 text-4xl font-semibold leading-[1.08] tracking-tight sm:text-5xl"
         >
-          I'm {site.shortName}. I build <span class="marker">backend
-          systems</span>, break them, and write down what I figure out.
+          I build <span class="marker">backend systems</span>, break them, and
+          write down what I figure out.
         </h1>
         <p class="mt-6 max-w-xl text-lg text-pencil">
-          {site.bio[0]}
+          Backend developer from Nepal — Node.js, PostgreSQL, Redis, Docker.
+          BCA under Tribhuvan University.
         </p>
         <div class="mt-8 flex flex-wrap gap-3">
           <a
@@ -99,22 +97,27 @@ const stats = [
       </aside>
     </section>
 
-    <dl class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <ul class="grid gap-4 sm:grid-cols-3">
       {
-        stats.map((stat, index) => (
-          <div
-            class:list={[
-              "relative card-paper p-5 pop-sm",
-              index % 2 === 0 ? "-rotate-1" : "rotate-1",
-            ]}
-          >
-            <span class="tape -top-2.5 left-1/2 -translate-x-1/2 -rotate-2"></span>
-            <dt class="font-hand text-lg text-pencil">{stat.label}</dt>
-            <dd class="mt-1 text-3xl font-semibold">{stat.value}</dd>
-          </div>
+        metrics.map((metric) => (
+          <li class="flex">
+            <a
+              href={metric.href}
+              class="group relative flex w-full flex-col card-paper p-5 pop-sm transition duration-200 hover:-translate-y-1 hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-paper"
+            >
+              <span class="tape -top-2.5 left-1/2 -translate-x-1/2 -rotate-2" />
+              <span class="font-hand text-lg text-pencil">{metric.label}</span>
+              <span class="mt-1 flex items-baseline justify-between gap-2">
+                <span class="text-3xl font-semibold">{metric.value}</span>
+                <span class="font-hand text-2xl text-accent transition group-hover:translate-x-0.5">
+                  →
+                </span>
+              </span>
+            </a>
+          </li>
         ))
       }
-    </dl>
+    </ul>
 
     <section class="mt-20">
       <div class="flex flex-wrap items-end justify-between gap-3">
