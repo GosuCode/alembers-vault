@@ -1,0 +1,28 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import AdminApp from "../../components/admin/AdminApp.tsx";
+---
+
+<BaseLayout
+  title="Dashboard · Alember's Vault"
+  description="Private analytics dashboard."
+  noindex
+>
+  <main class="mx-auto max-w-5xl px-6 py-12">
+    <header class="flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <h1 class="font-hand text-4xl text-ink">the dashboard</h1>
+        <p class="mt-1 text-sm text-pencil">
+          visitors, clicks and time-on-page — private, not indexed
+        </p>
+      </div>
+      <a href="/" class="font-hand text-xl text-accent transition hover:text-accent-dark">
+        ← back to the vault
+      </a>
+    </header>
+
+    <div class="mt-10">
+      <AdminApp client:load />
+    </div>
+  </main>
+</BaseLayout>

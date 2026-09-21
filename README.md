@@ -297,17 +297,29 @@ pnpm deploy:worker        # `pnpm run deploy` also works; bare `pnpm deploy` is 
 
 ### Admin dashboard
 
-`/admin/` (Phase 2, not built yet) uses Supabase magic-link auth. After the
-admin user exists, grant access:
+`/admin/` is a private, `noindex` dashboard using Supabase magic-link auth.
+Create the admin user and allow-list them in one step:
 
-```sql
-insert into public.admins (user_id, email)
-select id, email from auth.users where email = 'you@example.com';
+```sh
+node --env-file=.env scripts/seed-admin.mjs you@example.com
 ```
 
-Dashboards read the `analytics.*` views (`daily`, `top_pages`, `sources`,
-`referrers`, `countries`, `devices`, `top_links`, `downloads`,
-`content_leaderboard`, `search_terms`), gated by RLS via `public.is_admin()`.
+Then sign in at `/admin/` (or `/admin/login`) with that email. RLS — not the
+client guard — is the real gate: dashboards read the `analytics.*` views
+(`daily`, `top_pages`, `sources`, `referrers`, `countries`, `devices`,
+`top_links`, `downloads`, `content_leaderboard`, `search_terms`) via
+`public.is_admin()`.
+
+Before magic links work, set the Auth URLs in the Supabase dashboard →
+**Authentication → URL Configuration**:
+
+- **Site URL**: `https://vault.shreeshalember.com.np`
+- **Redirect URLs** (add both):
+  - `https://vault.shreeshalember.com.np/admin/`
+  - `http://localhost:4321/admin/`
+
+Optionally turn off **Allow new users to sign up** once your admin exists; the
+allow-list already blocks non-admins regardless.
 
 `pnpm` is pinned via `packageManager` (`pnpm@10.11.1`) to match the build
 image. Commit `pnpm-lock.yaml`; the build runs `pnpm install --frozen-lockfile`.

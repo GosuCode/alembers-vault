@@ -7,12 +7,14 @@ interface Props {
   title?: string;
   description?: string;
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  noindex?: boolean;
 }
 
 const {
   title = `${site.name} · Alember's Vault`,
   description = `Notes, papers, and projects by ${site.name}.`,
   jsonLd,
+  noindex = false,
 } = Astro.props;
 
 const nav = [
@@ -39,6 +41,7 @@ const year = new Date().getFullYear();
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
     <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
     <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site).href} />
     <meta property="og:type" content="website" />
     <meta property="og:title" content={title} />
