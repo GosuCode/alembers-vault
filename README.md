@@ -51,6 +51,34 @@ Dashboard → **Project Settings → API Keys**:
 deploying; keep the secret key out of hosting env vars unless a server-side
 feature actually needs it. If a secret key leaks, revoke it on the same page.
 
+### Secret scanning (pre-commit)
+
+A pre-commit guard lives in `.githooks/pre-commit` and is enabled automatically
+by `pnpm install` (`prepare` sets `core.hooksPath`). It:
+
+1. refuses to commit `.env`, `.env.*` (except `.env.example`) or `.dev.vars`,
+2. runs `gitleaks git --staged` when installed,
+3. otherwise runs a dependency-free fallback scan for common secret formats.
+
+Enable it by hand on an existing clone:
+
+```sh
+git config core.hooksPath .githooks
+```
+
+Install the real scanner for full coverage (the fallback is a safety net, not a
+substitute):
+
+```sh
+# macOS: brew install gitleaks
+# Linux: download a release binary, or: go install github.com/gitleaks/gitleaks/v8@latest
+pnpm scan:secrets      # scan the whole history on demand
+```
+
+Bypass once with `git commit --no-verify` (avoid). The verify endpoint that
+feeds the dashboard is public, so **only** RLS protects the data — see the
+anon checks in "Analytics & edge API".
+
 ## Academic archive
 
 Documents live in the public `academic` storage bucket (50 MB per file).
