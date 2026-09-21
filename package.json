@@ -8,10 +8,11 @@
   },
   "scripts": {
     "dev": "astro dev",
+    "dev:api": "wrangler dev",
     "build": "astro build",
     "preview": "astro preview",
-    "check": "astro check",
-    "deploy": "astro build && wrangler deploy",
+    "check": "astro check && tsc -p tsconfig.worker.json",
+    "deploy:worker": "astro build && wrangler deploy",
     "upload": "node --env-file=.env scripts/upload-academic.mjs",
     "ocr": "node --env-file=.env scripts/ocr-papers.mjs",
     "import:medium": "node scripts/import-medium.mjs",
@@ -36,9 +37,11 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
+    "@cloudflare/workers-types": "^5.20260921.1",
     "@tailwindcss/typography": "^0.5.20",
     "turndown": "^7.2.4",
     "turndown-plugin-gfm": "^1.0.2",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "wrangler": "^4.135.0"
   }
 }

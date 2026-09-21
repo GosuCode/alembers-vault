@@ -1,12 +1,20 @@
 {
-  // Static Astro site: build to ./dist, then `wrangler deploy` serves the files.
-  // No `main` entry means no Worker script/adapter — pure static assets.
-  // https://developers.cloudflare.com/workers/framework-guides/web-apps/astro/#if-you-have-a-static-site
+  // Static Astro site (./dist) served by Cloudflare, plus a small Worker that
+  // owns /api/* for analytics + download/redirect proxying.
+  // Only /api/* invokes the Worker (run_worker_first); everything else is served
+  // straight from the static asset directory.
+  // https://developers.cloudflare.com/workers/static-assets/routing/
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "alembers-vault",
+  "main": "src/worker.ts",
   "compatibility_date": "2026-09-19",
   "assets": {
     "directory": "./dist",
-    "not_found_handling": "404-page"
+    "binding": "ASSETS",
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/api/*"]
+  },
+  "observability": {
+    "enabled": true
   }
 }

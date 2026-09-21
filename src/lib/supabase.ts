@@ -32,3 +32,16 @@ export function academicFileUrl(storagePath: string): string {
   if (!supabaseUrl) return "";
   return `${supabaseUrl}/storage/v1/object/public/${ACADEMIC_BUCKET}/${storagePath}`;
 }
+
+// Same-origin proxy that logs the open/download server-side, then 302s to the
+// public Supabase URL above. Use for explicit open/download links.
+export function academicProxyUrl(
+  storagePath: string,
+  opts: { mode?: "view" | "download"; from?: string; label?: string } = {},
+): string {
+  const params = new URLSearchParams({ path: storagePath });
+  if (opts.mode) params.set("mode", opts.mode);
+  if (opts.from) params.set("from", opts.from);
+  if (opts.label) params.set("label", opts.label);
+  return `/api/download?${params.toString()}`;
+}

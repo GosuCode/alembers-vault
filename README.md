@@ -215,9 +215,11 @@ rationale.
 
 ## Deployment (Cloudflare)
 
-Static output — **no Astro adapter needed**. `wrangler.jsonc` declares the
-`./dist` folder as static assets, so Wrangler does not auto-configure the
-`@astrojs/cloudflare` adapter (which is only for SSR).
+Static Astro output served by a small Worker. `wrangler.jsonc` points at
+`./dist` as static assets (binding `ASSETS`) and uses
+`run_worker_first: ["/api/*"]`, so only `/api/*` runs `src/worker.ts`; every
+other request is served straight from the asset directory. **No Astro adapter
+needed** (SSR is not used).
 
 ### Workers Builds (Git integration)
 
@@ -225,18 +227,87 @@ In the Cloudflare dashboard → **Workers & Pages → Create → Workers → Con
 to Git**:
 
 - Build command: `pnpm build`
-- Deploy command: `npx wrangler deploy` (the default), or `pnpm deploy`
+- Deploy command: `npx wrangler deploy` (the default), or `pnpm deploy:worker`
 - **Build variables and secrets** (**Settings → Build**):
   - `PUBLIC_SUPABASE_URL` = `https://bunlkimihykrtxitgwmg.supabase.co`
   - `PUBLIC_SUPABASE_ANON_KEY` = your `sb_publishable_...` key
 
   Astro inlines `PUBLIC_*` at build time, so these must be *build* variables,
-  not runtime ones. A Worker with only static assets cannot have runtime
-  variables at all — and does not need them, since the site reads nothing at
-  runtime except the compiled-in values.
+  not runtime ones.
 
-  Do **not** add `SUPABASE_SERVICE_ROLE_KEY` — the deployed site is read-only
-  and never needs it.
+- **Runtime secrets** (Worker **Settings → Variables and Secrets**), set once:
+  - `SUPABASE_URL`, `SUPABASE_ANON_KEY` — same values as the two above
+  - `INGEST_TOKEN` — random token (see "Analytics & edge API")
+  - `IP_SALT` — random string used to hash visitor IPs
+
+  Do **not** add `SUPABASE_SERVICE_ROLE_KEY` — neither the site nor the Worker
+  needs it.
+
+`pnpm` is pinned via `packageManager` (`pnpm@10.11.1`) to match the build
+image. Commit `pnpm-lock.yaml`; the build runs `pnpm install --frozen-lockfile`.
+
+## Analytics & edge API
+
+First-party, cookie-less visitor analytics + a full click/link log, plus a
+download/redirect proxy. All event writes go through the `analytics` schema in
+Supabase; the Worker holds no service role.
+
+- **Pageviews, clicks, time-on-page, scroll depth, searches, downloads, 404s** —
+  collected via `src/lib/analytics.ts` (beacon) and `src/worker.ts`.
+- **Geo/device/referrer** come from Cloudflare `request.cf` + user-agent at the
+  Worker; visitor identity is a salted hash (no raw IP is stored).
+- **File links** (`/api/download`) are logged server-side, so counts survive ad
+  blockers. `mode=view` logs a `pdf_open`, `mode=download` logs a `download`.
+- **Renames**: put `from_path → to_path` in `public.redirects`; the 404 page
+  asks `/api/redirect` and follows a match.
+- **Retention**: nightly `pg_cron` job rolls events into `analytics.daily_rollup`
+  / `link_daily_rollup`, then deletes raw rows older than 90 days.
+
+### Local development
+
+```sh
+# terminal 1 — edge API on :8787 (reads .dev.vars; gitignored)
+pnpm dev:api
+
+# terminal 2 — Astro on :4321, proxies /api to :8787
+pnpm dev
+```
+
+Secrets for local live in `.dev.vars` (copy the four runtime secrets above).
+Generate the ingest token and its stored hash:
+
+```sh
+TOKEN=$(openssl rand -hex 32)
+printf '%s' "$TOKEN" | sha256sum        # → analytics.ingest_config.token_hash
+```
+
+Set the raw value as `INGEST_TOKEN` (`.dev.vars` / `wrangler secret put`), and
+store only the hash in the DB. Rotate by updating both.
+
+### Deploying the Worker
+
+```sh
+pnpm build
+npx wrangler secret put SUPABASE_URL
+npx wrangler secret put SUPABASE_ANON_KEY
+npx wrangler secret put INGEST_TOKEN
+npx wrangler secret put IP_SALT
+pnpm deploy:worker        # `pnpm run deploy` also works; bare `pnpm deploy` is a reserved pnpm command
+```
+
+### Admin dashboard
+
+`/admin/` (Phase 2, not built yet) uses Supabase magic-link auth. After the
+admin user exists, grant access:
+
+```sql
+insert into public.admins (user_id, email)
+select id, email from auth.users where email = 'you@example.com';
+```
+
+Dashboards read the `analytics.*` views (`daily`, `top_pages`, `sources`,
+`referrers`, `countries`, `devices`, `top_links`, `downloads`,
+`content_leaderboard`, `search_terms`), gated by RLS via `public.is_admin()`.
 
 `pnpm` is pinned via `packageManager` (`pnpm@10.11.1`) to match the build
 image. Commit `pnpm-lock.yaml`; the build runs `pnpm install --frozen-lockfile`.

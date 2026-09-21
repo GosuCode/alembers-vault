@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import OfficeViewer from "./OfficeViewer";
 
 const PDFViewer = lazy(() => import("./PDFViewer"));
@@ -10,6 +10,15 @@ interface Props {
 }
 
 export default function DocumentViewer({ url, title, isPdf }: Props) {
+  // Inline viewer open = a pdf_open event (covers PDF and DOCX).
+  useEffect(() => {
+    window.__vaultTrack?.({
+      event_type: "pdf_open",
+      link_kind: isPdf ? "pdf" : "docx",
+      link_text: title,
+    });
+  }, [url, isPdf, title]);
+
   if (!isPdf) {
     return <OfficeViewer url={url} title={title} />;
   }

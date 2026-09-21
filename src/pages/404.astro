@@ -32,4 +32,27 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       </a>
     </div>
   </main>
+
+  <script>
+    import { track } from "../lib/analytics";
+
+    const missing = location.pathname;
+    track({
+      event_type: "not_found",
+      path: missing,
+      meta: { query: location.search.slice(0, 200) },
+    });
+
+    // Recover from a renamed file: 301s live in public.redirects.
+    fetch(`/api/redirect?path=${encodeURIComponent(missing)}`)
+      .then((response) =>
+        response.ok
+          ? (response.json() as Promise<{ to_path?: string } | null>)
+          : null,
+      )
+      .then((row) => {
+        if (row?.to_path) location.replace(row.to_path);
+      })
+      .catch(() => {});
+  </script>
 </BaseLayout>

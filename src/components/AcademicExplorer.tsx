@@ -169,6 +169,28 @@ export default function AcademicExplorer({
     });
   }, [resources, query, category, semester, year]);
 
+  // Log searches/filters (debounced) with the result count — powers the
+  // search-term and zero-result views in the dashboard.
+  useEffect(() => {
+    if (status !== "ready") return;
+    const active =
+      query.trim() !== "" || category !== "all" || semester !== "all" || year !== "all";
+    if (!active) return;
+    const handle = window.setTimeout(() => {
+      window.__vaultTrack?.({
+        event_type: "search",
+        meta: {
+          query: query.trim(),
+          category,
+          semester,
+          year,
+          results: filtered.length,
+        },
+      });
+    }, 800);
+    return () => window.clearTimeout(handle);
+  }, [query, category, semester, year, filtered.length, status]);
+
   const groups = useMemo(() => {
     const map = new Map<number | null, AcademicResource[]>();
     for (const resource of filtered) {

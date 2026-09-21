@@ -10,7 +10,7 @@ import {
   REPORT_ROLE_ORDER,
   STATUS_LABEL,
 } from "../../lib/projects";
-import { academicFileUrl } from "../../lib/supabase";
+import { academicProxyUrl } from "../../lib/supabase";
 import { site } from "../../data/site";
 
 export async function getStaticPaths() {
@@ -208,11 +208,13 @@ const jsonLd = [
         {
           links.length > 0 && (
             <div class="mt-5 flex flex-wrap gap-3">
-              {links.map(({ href, label }) => (
+              {links.map(({ href, label, kind }) => (
                 <a
                   href={href}
                   target="_blank"
                   rel="noopener noreferrer"
+                  data-track={kind}
+                  data-track-label={label}
                   class="rounded-md border border-ink/80 bg-marker px-4 py-1.5 font-hand text-xl leading-tight pop-sm transition hover:-translate-y-0.5"
                 >
                   {label} ↗
@@ -272,7 +274,11 @@ const jsonLd = [
                       <div class="flex gap-2">
                         {item.kind === "pdf" && (
                           <a
-                            href={academicFileUrl(item.path)}
+                            href={academicProxyUrl(item.path, {
+                              mode: "view",
+                              from: Astro.url.pathname,
+                              label: item.label,
+                            })}
                             target="_blank"
                             rel="noopener noreferrer"
                             class="rounded-md border border-ink/70 bg-accent px-3 py-1 font-hand text-lg leading-tight text-white transition hover:bg-accent-dark"
@@ -281,7 +287,11 @@ const jsonLd = [
                           </a>
                         )}
                         <a
-                          href={academicFileUrl(item.path)}
+                          href={academicProxyUrl(item.path, {
+                            mode: "download",
+                            from: Astro.url.pathname,
+                            label: item.label,
+                          })}
                           download
                           class="rounded-md border border-ink/70 bg-marker px-3 py-1 font-hand text-lg leading-tight transition hover:-translate-y-0.5"
                         >
@@ -308,6 +318,8 @@ const jsonLd = [
                     href={item.src.src}
                     target="_blank"
                     rel="noopener noreferrer"
+                    data-track="gallery"
+                    data-track-label={item.caption}
                     class="block overflow-hidden rounded-lg border border-ink/60 bg-white transition hover:-translate-y-0.5"
                   >
                     <Image

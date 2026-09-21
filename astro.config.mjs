@@ -20,6 +20,12 @@ export default defineConfig({
   },
 
   vite: {
-    plugins: [tailwindcss()]
+    plugins: [tailwindcss()],
+    // Dev only: forward /api/* to `pnpm dev:api` (wrangler dev on :8787).
+    server: {
+      proxy: {
+        "/api": "http://127.0.0.1:8787",
+      },
+    },
   }
 });

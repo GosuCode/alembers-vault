@@ -8,7 +8,11 @@ import {
   pageTitle,
   slugFor,
 } from "../../lib/academic";
-import { academicFileUrl, type AcademicResource } from "../../lib/supabase";
+import {
+  academicFileUrl,
+  academicProxyUrl,
+  type AcademicResource,
+} from "../../lib/supabase";
 
 export async function getStaticPaths() {
   const resources = (await fetchAcademicResources()).filter(
@@ -35,6 +39,16 @@ interface Props {
 
 const { resource, siblings } = Astro.props;
 const fileUrl = academicFileUrl(resource.storage_path);
+const openUrl = academicProxyUrl(resource.storage_path, {
+  mode: "view",
+  from: Astro.url.pathname,
+  label: resource.title,
+});
+const downloadUrl = academicProxyUrl(resource.storage_path, {
+  mode: "download",
+  from: Astro.url.pathname,
+  label: resource.title,
+});
 const isPdf =
   resource.mime_type === "application/pdf" ||
   resource.storage_path.toLowerCase().endsWith(".pdf");
@@ -114,7 +128,7 @@ const jsonLd = [
       </p>
       <div class="mt-5 flex flex-wrap gap-3">
         <a
-          href={fileUrl}
+          href={openUrl}
           target="_blank"
           rel="noopener noreferrer"
           class="rounded-md border border-ink/80 bg-accent px-5 py-2 text-sm font-semibold text-white pop-sm transition hover:-translate-y-0.5 hover:bg-accent-dark"
@@ -122,7 +136,7 @@ const jsonLd = [
           Open {isPdf ? "PDF" : "document"} ↗
         </a>
         <a
-          href={fileUrl}
+          href={downloadUrl}
           download
           class="rounded-md border border-ink/80 bg-white px-5 py-2 text-sm font-semibold pop-sm transition hover:-translate-y-0.5"
         >
