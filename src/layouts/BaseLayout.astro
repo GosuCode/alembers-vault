@@ -123,7 +123,10 @@ const year = new Date().getFullYear();
         <div>
           <p class="font-hand text-3xl text-ink">— {site.shortName}</p>
           <p class="mt-1 text-sm text-pencil">
-            © {year} {site.name} · {site.location}
+            © {year} {site.name} · {site.location} ·{" "}
+            <a href="/privacy/" class="underline decoration-dotted hover:text-accent">
+              privacy
+            </a>
           </p>
         </div>
         <ul class="flex flex-wrap gap-5 font-hand text-xl">

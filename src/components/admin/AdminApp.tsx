@@ -1,6 +1,6 @@
 import { useEffect, useState, type JSX } from "react";
 import type { Session } from "@supabase/supabase-js";
-import { getAuthClient, isAdmin, signOut } from "../../lib/admin";
+import { getAuthClient, isAdmin, signOut, triggerRebuild } from "../../lib/admin";
 import Academics from "./Academics";
 import ActivityLog from "./ActivityLog";
 import Leaderboard from "./Leaderboard";
@@ -48,6 +48,7 @@ export default function AdminApp() {
   const [ready, setReady] = useState(false);
   const [admin, setAdmin] = useState(false);
   const [tab, setTab] = useState<Tab>("overview");
+  const [rebuild, setRebuild] = useState("");
 
   useEffect(() => {
     const supabase = getAuthClient();
@@ -130,7 +131,20 @@ export default function AdminApp() {
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-3 text-sm text-pencil">
+        <div className="flex flex-wrap items-center gap-3 text-sm text-pencil">
+          {rebuild && <span className="text-accent-dark">{rebuild}</span>}
+          <button
+            type="button"
+            onClick={async () => {
+              setRebuild("requesting a rebuild…");
+              const result = await triggerRebuild();
+              setRebuild(result.message);
+              window.setTimeout(() => setRebuild(""), 6000);
+            }}
+            className="rounded-md border border-ink/70 bg-white px-3 py-1 font-hand text-base leading-tight transition hover:bg-marker"
+          >
+            rebuild site
+          </button>
           <span>{session.user.email}</span>
           <button
             type="button"

@@ -1,5 +1,5 @@
 import { useEffect, useState, type ChangeEvent } from "react";
-import { getAuthClient } from "../../lib/admin";
+import { getAuthClient, triggerRebuild } from "../../lib/admin";
 import type { AcademicResource } from "../../lib/supabase";
 import { formatDateTime } from "../../lib/format";
 
@@ -203,6 +203,8 @@ export default function Academics() {
       }
       resetForm();
       await load();
+      // Static pages refresh on the next build; fire-and-forget.
+      void triggerRebuild();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : String(error));
     } finally {
@@ -222,6 +224,7 @@ export default function Academics() {
       return;
     }
     await load();
+    void triggerRebuild();
   }
 
   if (status === "loading") {

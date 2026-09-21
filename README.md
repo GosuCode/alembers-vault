@@ -288,8 +288,16 @@ Supabase; the Worker holds no service role.
   blockers. `mode=view` logs a `pdf_open`, `mode=download` logs a `download`.
 - **Renames**: put `from_path → to_path` in `public.redirects`; the 404 page
   asks `/api/redirect` and follows a match.
-- **Retention**: nightly `pg_cron` job rolls events into `analytics.daily_rollup`
-  / `link_daily_rollup`, then deletes raw rows older than 90 days.
+- **Retention**: nightly `pg_cron` job (`analytics-rollup-prune`, 03:15 UTC)
+  rolls finished days into `analytics.daily_rollup` / `link_daily_rollup`, then
+  deletes raw rows older than 90 days. Aggregates are kept indefinitely and are
+  what the dashboard uses for older ranges. Run it by hand with
+  `select analytics.rollup_and_prune(90);`.
+- **Rebuild**: static HTML and per-paper pages only refresh on a new build.
+  `/api/rebuild` (admin-only, verified against `is_admin()`) POSTs a Cloudflare
+  deploy hook so uploads/edits reach crawlers. The dashboard's **rebuild site**
+  button and the academics tab call it; without the hook it returns `501` and
+  nothing breaks.
 
 ### Local development
 
@@ -320,8 +328,14 @@ npx wrangler secret put SUPABASE_URL
 npx wrangler secret put SUPABASE_ANON_KEY
 npx wrangler secret put INGEST_TOKEN
 npx wrangler secret put IP_SALT
+# optional — enables /api/rebuild and the dashboard "rebuild site" button
+npx wrangler secret put CF_DEPLOY_HOOK
 pnpm deploy:worker        # `pnpm run deploy` also works; bare `pnpm deploy` is a reserved pnpm command
 ```
+
+Get the deploy hook URL from Cloudflare → your Worker → **Settings → Builds &
+deployments → Deploy hooks** (or **Triggers**), create one for the `main`
+branch, and paste that URL as `CF_DEPLOY_HOOK`.
 
 ### Admin dashboard
 

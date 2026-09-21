@@ -155,10 +155,11 @@ async function supabaseFetch(
   env: Env,
   path: string,
   init: RequestInit & { schema?: string } = {},
+  token?: string,
 ): Promise<Response> {
   const headers = new Headers(init.headers);
   headers.set("apikey", env.SUPABASE_ANON_KEY);
-  headers.set("authorization", `Bearer ${env.SUPABASE_ANON_KEY}`);
+  headers.set("authorization", `Bearer ${token ?? env.SUPABASE_ANON_KEY}`);
   if (init.schema) headers.set("Content-Profile", init.schema);
   if (init.body) headers.set("content-type", "application/json");
   return fetch(`${env.SUPABASE_URL}/rest/v1/${path}`, { ...init, headers });
@@ -338,12 +339,30 @@ async function handleRedirect(request: Request, env: Env): Promise<Response> {
   return json(rows[0], 200);
 }
 
+async function handleRebuild(request: Request, env: Env): Promise<Response> {
+  const token = (request.headers.get("authorization") ?? "").replace(/^Bearer\s+/i, "");
+  if (!token) return json({ error: "missing token" }, 401);
+
+  // Verify the caller is an admin via the DB's own gate.
+  const check = await supabaseFetch(env, "rpc/is_admin", { method: "POST", body: "{}" }, token);
+  if (!check.ok) return json({ error: "auth check failed" }, 401);
+  if ((await check.json()) !== true) return json({ error: "not admin" }, 403);
+
+  if (!env.CF_DEPLOY_HOOK) {
+    return json({ ok: false, configured: false, error: "deploy hook not configured" }, 501);
+  }
+
+  const hook = await fetch(env.CF_DEPLOY_HOOK, { method: "POST" });
+  return json({ ok: hook.ok, status: hook.status }, hook.ok ? 200 : 502);
+}
+
 function handleHealth(env: Env): Response {
   return json({
     ok: true,
     supabase: Boolean(env.SUPABASE_URL && env.SUPABASE_ANON_KEY),
     ingest: Boolean(env.INGEST_TOKEN),
     hash: Boolean(env.IP_SALT),
+    rebuild: Boolean(env.CF_DEPLOY_HOOK),
   });
 }
 
@@ -360,7 +379,7 @@ export default {
         headers: {
           "access-control-allow-origin": request.headers.get("origin") ?? "*",
           "access-control-allow-methods": "GET,POST,OPTIONS",
-          "access-control-allow-headers": "content-type",
+          "access-control-allow-headers": "content-type, authorization",
         },
       });
     }
@@ -368,6 +387,10 @@ export default {
     if (pathname === "/api/collect") {
       if (request.method !== "POST") return json({ error: "method" }, 405);
       return handleCollect(request, env);
+    }
+    if (pathname === "/api/rebuild") {
+      if (request.method !== "POST") return json({ error: "method" }, 405);
+      return handleRebuild(request, env);
     }
     if (pathname === "/api/download") return handleDownload(request, env);
     if (pathname === "/api/redirect") return handleRedirect(request, env);

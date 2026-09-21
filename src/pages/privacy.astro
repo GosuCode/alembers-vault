@@ -1,0 +1,78 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { site } from "../data/site";
+
+const contact = site.socials.find((social) => social.href.startsWith("mailto:"));
+---
+
+<BaseLayout
+  title="Privacy · Alember's Vault"
+  description="What this site measures, and what it deliberately does not."
+>
+  <main class="prose prose-lg mx-auto max-w-3xl px-6 py-12">
+    <h1 class="font-hand text-4xl not-prose">privacy</h1>
+    <p class="not-prose mt-2 text-lg text-pencil">
+      Short version: no cookies, no ad trackers, no personal profiles.
+    </p>
+
+    <h2>What is measured</h2>
+    <p>
+      This site keeps first-party, cookie-less analytics. When you load a page it
+      records basic, aggregate-friendly facts:
+    </p>
+    <ul>
+      <li>the page path, and when it was viewed;</li>
+      <li>the referring site and any <code>utm_source</code> tag;</li>
+      <li>
+        coarse location derived by Cloudflare at the network edge — country,
+        city and network operator (ASN) — never a precise address;
+      </li>
+      <li>device class, browser and operating system, parsed from your user agent;</li>
+      <li>
+        clicks, file downloads and how long a page stayed visible, so I know
+        which papers and posts are actually useful.
+      </li>
+    </ul>
+
+    <h2>What is not stored</h2>
+    <ul>
+      <li>No cookies, no localStorage identifiers, no cross-site tracking.</li>
+      <li>
+        No raw IP address. The IP is combined with a secret salt and hashed, so
+        repeat visits can be counted without keeping the address itself.
+      </li>
+      <li>No names, emails or accounts unless you email me directly.</li>
+    </ul>
+
+    <h2>Do Not Track</h2>
+    <p>
+      If your browser sends <code>Do Not Track</code>, no analytics beacon is
+      sent at all.
+    </p>
+
+    <h2>Retention</h2>
+    <p>
+      Raw events are rolled into daily totals and deleted after 90 days. The
+      daily aggregates — counts, not identifiers — are kept longer for trend
+      lines.
+    </p>
+
+    <h2>Your choice</h2>
+    <p>
+      Analytics are privacy-friendly by design, but you can block them with any
+      content blocker, or enable Do Not Track. The site works identically either
+      way.
+    </p>
+
+    {
+      contact && (
+        <p class="not-prose mt-8 text-sm text-pencil">
+          Questions? <a class="text-accent hover:text-accent-dark" href={contact.href}>
+            {contact.label.toLowerCase()}
+          </a>
+          .
+        </p>
+      )
+    }
+  </main>
+</BaseLayout>

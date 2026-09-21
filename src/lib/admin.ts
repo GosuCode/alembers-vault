@@ -61,6 +61,30 @@ export async function isAdmin(): Promise<boolean> {
   return data === true;
 }
 
+// Ask the Worker to trigger a Cloudflare build so static pages pick up DB
+// changes. No-ops (with a message) until CF_DEPLOY_HOOK is set.
+export async function triggerRebuild(): Promise<{ ok: boolean; message: string }> {
+  const { data } = await getAuthClient().auth.getSession();
+  const token = data.session?.access_token;
+  if (!token) return { ok: false, message: "Not signed in." };
+  try {
+    const response = await fetch("/api/rebuild", {
+      method: "POST",
+      headers: { authorization: `Bearer ${token}` },
+    });
+    if (response.status === 501) {
+      return { ok: false, message: "Deploy hook not configured yet." };
+    }
+    if (!response.ok) {
+      const body = (await response.json().catch(() => ({}))) as { error?: string };
+      return { ok: false, message: body.error ?? "Rebuild failed." };
+    }
+    return { ok: true, message: "Rebuild triggered." };
+  } catch {
+    return { ok: false, message: "Rebuild request failed." };
+  }
+}
+
 // ── analytics view row shapes (mirror the SQL views) ────────────────────────
 
 export interface DailyRow {
