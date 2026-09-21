@@ -25,9 +25,12 @@ export type Database = {
           id: string
           mime_type: string | null
           semester: number | null
+          slug: string | null
           storage_path: string
           tags: string[]
           title: string
+          updated_at: string
+          updated_by: string | null
           year: number | null
         }
         Insert: {
@@ -40,9 +43,12 @@ export type Database = {
           id?: string
           mime_type?: string | null
           semester?: number | null
+          slug?: string | null
           storage_path: string
           tags?: string[]
           title: string
+          updated_at?: string
+          updated_by?: string | null
           year?: number | null
         }
         Update: {
@@ -55,9 +61,12 @@ export type Database = {
           id?: string
           mime_type?: string | null
           semester?: number | null
+          slug?: string | null
           storage_path?: string
           tags?: string[]
           title?: string
+          updated_at?: string
+          updated_by?: string | null
           year?: number | null
         }
         Relationships: []
@@ -106,6 +115,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_usage: { Args: never; Returns: Json }
       is_admin: { Args: never; Returns: boolean }
     }
     Enums: {

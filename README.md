@@ -352,7 +352,16 @@ Tabs: **overview** (cards + pageview chart + top pages/sources), **visitors**
 (recent visits + geo/device/referrer breakdowns), **activity** (raw event stream
 with type/range/country/text filters, pagination, CSV export), **links**
 (most-clicked + downloads), **content** (per-content leaderboard + search terms,
-including zero-result searches).
+including zero-result searches), **academics** (upload / edit / delete documents
+— replaces the CLI for day-to-day work), **redirects** (old path → new path,
+served by `/api/redirect`), **usage** (database + storage against free-tier
+limits).
+
+Uploads from the dashboard go straight to the `academic` bucket via the
+authenticated session; RLS limits writes to admins (`public.is_admin()`), and
+the `pnpm upload` CLI remains available for bulk/scripted work. Every write
+stamps `updated_at` / `updated_by`, and each resource carries a stable `slug`
+(unique for papers) so renaming a file does not break its URL.
 
 Before magic links work, set the Auth URLs in the Supabase dashboard →
 **Authentication → URL Configuration**:

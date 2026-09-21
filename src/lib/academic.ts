@@ -20,8 +20,9 @@ export function ordinal(value: number | null): string {
   return ORDINAL[value] ?? `${value}th`;
 }
 
-/** URL slug for a resource: filename without extension (unique per storage_path). */
+/** URL slug for a resource: the stored stable slug, else the filename. */
 export function slugFor(resource: AcademicResource): string {
+  if (resource.slug) return resource.slug;
   const base = resource.storage_path.split("/").pop() ?? resource.id;
   return base.replace(/\.[a-z0-9]+$/i, "").toLowerCase();
 }

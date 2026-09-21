@@ -1,14 +1,25 @@
 import { useEffect, useState, type JSX } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { getAuthClient, isAdmin, signOut } from "../../lib/admin";
+import Academics from "./Academics";
 import ActivityLog from "./ActivityLog";
 import Leaderboard from "./Leaderboard";
 import Links from "./Links";
 import LoginForm from "./LoginForm";
 import Overview from "./Overview";
+import Redirects from "./Redirects";
+import Usage from "./Usage";
 import Visitors from "./Visitors";
 
-type Tab = "overview" | "visitors" | "activity" | "links" | "content";
+type Tab =
+  | "overview"
+  | "visitors"
+  | "activity"
+  | "links"
+  | "content"
+  | "academics"
+  | "redirects"
+  | "usage";
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "overview", label: "overview" },
@@ -16,6 +27,9 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "activity", label: "activity" },
   { id: "links", label: "links" },
   { id: "content", label: "content" },
+  { id: "academics", label: "academics" },
+  { id: "redirects", label: "redirects" },
+  { id: "usage", label: "usage" },
 ];
 
 const PANELS: Record<Tab, () => JSX.Element> = {
@@ -24,6 +38,9 @@ const PANELS: Record<Tab, () => JSX.Element> = {
   activity: ActivityLog,
   links: Links,
   content: Leaderboard,
+  academics: Academics,
+  redirects: Redirects,
+  usage: Usage,
 };
 
 export default function AdminApp() {
