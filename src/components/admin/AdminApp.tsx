@@ -52,7 +52,7 @@ export default function AdminApp() {
     return (
       <div className="max-w-md">
         <p className="mb-5 text-sm text-pencil">
-          Sign in with your admin email — we&apos;ll send a one-time magic link.
+          Sign in with your admin email and password, or use a magic link.
         </p>
         <LoginForm />
       </div>

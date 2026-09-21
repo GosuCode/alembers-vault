@@ -43,6 +43,14 @@ export async function signInWithEmail(email: string): Promise<{ error?: string }
   return error ? { error: error.message } : {};
 }
 
+export async function signInWithPassword(
+  email: string,
+  password: string,
+): Promise<{ error?: string }> {
+  const { error } = await getAuthClient().auth.signInWithPassword({ email, password });
+  return error ? { error: error.message } : {};
+}
+
 export async function signOut(): Promise<void> {
   await getAuthClient().auth.signOut();
 }

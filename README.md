@@ -297,15 +297,25 @@ pnpm deploy:worker        # `pnpm run deploy` also works; bare `pnpm deploy` is 
 
 ### Admin dashboard
 
-`/admin/` is a private, `noindex` dashboard using Supabase magic-link auth.
-Create the admin user and allow-list them in one step:
+`/admin/` is a private, `noindex` dashboard. Create the admin user and
+allow-list them in one step:
 
 ```sh
 node --env-file=.env scripts/seed-admin.mjs you@example.com
 ```
 
-Then sign in at `/admin/` (or `/admin/login`) with that email. RLS — not the
-client guard — is the real gate: dashboards read the `analytics.*` views
+Sign in at `/admin/` (or `/admin/login`) with **email + password** by default,
+or switch to a **magic link**. Set/reset a password with:
+
+```sh
+node --env-file=.env scripts/set-password.mjs you@example.com 'new-password'
+```
+
+> Supabase's built-in email service is heavily rate-limited on the free tier
+> (`over_email_send_rate_limit`). Password sign-in avoids it entirely; for
+> reliable magic links, configure custom SMTP (Auth → SMTP Settings).
+
+RLS — not the client guard — is the real gate: dashboards read the `analytics.*` views
 (`daily`, `top_pages`, `sources`, `referrers`, `countries`, `devices`,
 `top_links`, `downloads`, `content_leaderboard`, `search_terms`) via
 `public.is_admin()`.
