@@ -184,6 +184,44 @@ function onDocumentClick(event: MouseEvent): void {
   });
 }
 
+function onDocumentCopy(): void {
+  try {
+    const text = (document.getSelection?.()?.toString() ?? "").trim();
+    if (text.length < 15) return;
+    send({
+      event_type: "copy",
+      meta: { length: text.length, snippet: text.slice(0, 140) },
+    });
+  } catch {
+    /* ignore */
+  }
+}
+
+interface VitalMetric {
+  name: string;
+  value: number;
+  rating?: string;
+}
+
+function setupWebVitals(): void {
+  void import("web-vitals").then(({ onLCP, onCLS, onINP, onTTFB, onFCP }) => {
+    const report = (metric: VitalMetric) =>
+      send({
+        event_type: "web_vital",
+        meta: {
+          metric: metric.name,
+          value: Math.round(metric.value * 1000) / 1000,
+          rating: metric.rating ?? null,
+        },
+      });
+    onLCP(report);
+    onCLS(report);
+    onINP(report);
+    onTTFB(report);
+    onFCP(report);
+  });
+}
+
 function setupEngagement(): void {
   let activeMs = 0;
   let visibleSince: number | null =
@@ -251,7 +289,9 @@ export function setupAnalytics(): void {
 
   send({ event_type: "pageview" });
   document.addEventListener("click", onDocumentClick, true);
+  document.addEventListener("copy", onDocumentCopy);
   setupEngagement();
+  setupWebVitals();
 }
 
 export { send as track };

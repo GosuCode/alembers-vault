@@ -13,6 +13,8 @@ interface Props {
 
 export default function PDFViewer({ url, title }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const deepestRef = useRef(0);
+  const numPagesRef = useRef<number | undefined>(undefined);
   const [width, setWidth] = useState<number>();
   const [numPages, setNumPages] = useState<number>();
 
@@ -26,6 +28,59 @@ export default function PDFViewer({ url, title }: Props) {
     observer.observe(element);
     return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    numPagesRef.current = numPages;
+  }, [numPages]);
+
+  // Reset depth when a different document is loaded.
+  useEffect(() => {
+    deepestRef.current = 0;
+  }, [url]);
+
+  // Track how far into the document the reader gets.
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container || !numPages) return;
+    const nodes = Array.from(container.querySelectorAll<HTMLElement>("[data-page]"));
+    if (nodes.length === 0) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          const page = Number((entry.target as HTMLElement).dataset.page);
+          if (page > deepestRef.current) deepestRef.current = page;
+        }
+      },
+      { threshold: 0.35 },
+    );
+    nodes.forEach((node) => observer.observe(node));
+    return () => observer.disconnect();
+  }, [numPages]);
+
+  // Report reading depth when the viewer closes or the tab is hidden.
+  useEffect(() => {
+    const flush = () => {
+      const pages = numPagesRef.current;
+      if (!pages) return;
+      window.__vaultTrack?.({
+        event_type: "engagement",
+        link_kind: "pdf",
+        link_text: title,
+        meta: { surface: "pdf", pages, deepest: deepestRef.current },
+      });
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") flush();
+    };
+    window.addEventListener("pagehide", flush);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      flush();
+      window.removeEventListener("pagehide", flush);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [title]);
 
   return (
     <div ref={containerRef} className="flex flex-col gap-4">
@@ -64,12 +119,13 @@ export default function PDFViewer({ url, title }: Props) {
         className="flex flex-col items-center gap-3 overflow-hidden rounded-lg border border-ink/60"
       >
         {Array.from({ length: numPages ?? 0 }, (_, index) => (
-          <Page
-            key={index + 1}
-            pageNumber={index + 1}
-            width={width}
-            className="mx-auto bg-white shadow-sm"
-          />
+          <div key={index + 1} data-page={index + 1} className="flex w-full justify-center">
+            <Page
+              pageNumber={index + 1}
+              width={width}
+              className="mx-auto bg-white shadow-sm"
+            />
+          </div>
         ))}
       </Document>
     </div>

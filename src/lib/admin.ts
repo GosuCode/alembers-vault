@@ -157,6 +157,43 @@ export interface LeaderboardRow {
   avg_duration_ms: number;
   outbound_clicks: number;
   downloads: number;
+  copies: number;
+}
+
+export interface CopiedSnippetRow {
+  snippet: string;
+  path: string;
+  copies: number;
+}
+
+export interface PdfDepthRow {
+  content_slug: string | null;
+  path: string;
+  reads: number;
+  avg_deepest: number | null;
+  pages: number | null;
+}
+
+export interface SessionRow {
+  session_hash: string;
+  started_at: string;
+  ended_at: string;
+  pageviews: number;
+  events: number;
+  entry_path: string | null;
+  exit_path: string | null;
+  path_sequence: string[] | null;
+  country: string | null;
+  city: string | null;
+  device_type: string | null;
+  source: string | null;
+}
+
+export interface WebVitalRow {
+  metric: string;
+  samples: number;
+  p75: number | null;
+  avg: number | null;
 }
 
 export interface SearchTermRow {

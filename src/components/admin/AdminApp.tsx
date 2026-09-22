@@ -3,8 +3,10 @@ import type { Session } from "@supabase/supabase-js";
 import { getAuthClient, isAdmin, signOut, triggerRebuild } from "../../lib/admin";
 import Academics from "./Academics";
 import ActivityLog from "./ActivityLog";
+import Journeys from "./Journeys";
 import Leaderboard from "./Leaderboard";
 import Links from "./Links";
+import Live from "./Live";
 import LoginForm from "./LoginForm";
 import Overview from "./Overview";
 import Redirects from "./Redirects";
@@ -13,7 +15,9 @@ import Visitors from "./Visitors";
 
 type Tab =
   | "overview"
+  | "live"
   | "visitors"
+  | "journeys"
   | "activity"
   | "links"
   | "content"
@@ -23,7 +27,9 @@ type Tab =
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "overview", label: "overview" },
+  { id: "live", label: "live" },
   { id: "visitors", label: "visitors" },
+  { id: "journeys", label: "journeys" },
   { id: "activity", label: "activity" },
   { id: "links", label: "links" },
   { id: "content", label: "content" },
@@ -34,7 +40,9 @@ const TABS: { id: Tab; label: string }[] = [
 
 const PANELS: Record<Tab, () => JSX.Element> = {
   overview: Overview,
+  live: Live,
   visitors: Visitors,
+  journeys: Journeys,
   activity: ActivityLog,
   links: Links,
   content: Leaderboard,

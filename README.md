@@ -362,14 +362,22 @@ RLS — not the client guard — is the real gate: dashboards read the `analytic
 `top_links`, `downloads`, `content_leaderboard`, `search_terms`) via
 `public.is_admin()`.
 
-Tabs: **overview** (cards + pageview chart + top pages/sources), **visitors**
-(recent visits + geo/device/referrer breakdowns), **activity** (raw event stream
-with type/range/country/text filters, pagination, CSV export), **links**
-(most-clicked + downloads), **content** (per-content leaderboard + search terms,
-including zero-result searches), **academics** (upload / edit / delete documents
-— replaces the CLI for day-to-day work), **redirects** (old path → new path,
+Tabs: **overview** (cards, pageview chart, top pages/sources, **web vitals** p75),
+**live** (visitors active in the last 5 minutes via Supabase Realtime, with a
+polling fallback), **visitors** (recent visits + geo/device/referrer
+breakdowns), **journeys** (per-session entry → path sequence → exit), **activity**
+(raw event stream with type/range/country/text filters, pagination, CSV export),
+**links** (most-clicked + downloads), **content** (per-content leaderboard with
+view→click-through, **copies**, **PDF reading depth**, and search terms incl.
+zero-result searches), **academics** (upload / edit / delete documents —
+replaces the CLI for day-to-day work), **redirects** (old path → new path,
 served by `/api/redirect`), **usage** (database + storage against free-tier
 limits).
+
+Beyond pageviews, the beacon records delegated clicks, time-on-page, scroll
+depth, **copy events** (snippet text + length, ≥15 chars), **PDF reading depth**
+(deepest page reached) and **Core Web Vitals** (LCP/CLS/INP/TTFB/FCP) via
+`web-vitals`.
 
 Uploads from the dashboard go straight to the `academic` bucket via the
 authenticated session; RLS limits writes to admins (`public.is_admin()`), and

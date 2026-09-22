@@ -14,6 +14,8 @@ const TYPES = [
   "pdf_open",
   "engagement",
   "search",
+  "copy",
+  "web_vital",
   "not_found",
 ] as const;
 
@@ -36,7 +38,14 @@ function detail(row: EventRow): string {
       return row.link_text || row.link_url || "—";
     case "not_found":
       return row.path;
+    case "copy":
+      return String(row.meta?.snippet ?? `${row.meta?.length ?? "?"} chars`);
+    case "web_vital":
+      return `${row.meta?.metric ?? "vital"} · ${row.meta?.value ?? "?"}${row.meta?.rating ? ` (${row.meta.rating})` : ""}`;
     case "engagement":
+      if (row.meta?.surface === "pdf") {
+        return `pdf p.${row.meta.deepest ?? "?"} of ${row.meta.pages ?? "?"}`;
+      }
       return `${formatDuration(row.duration_ms)} · scroll ${row.scroll_depth ?? 0}%`;
     default:
       return row.title || row.path;
