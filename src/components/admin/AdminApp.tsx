@@ -1,6 +1,7 @@
-import { useEffect, useState, type JSX } from "react";
+import { useEffect, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { getAuthClient, isAdmin, signOut, triggerRebuild } from "../../lib/admin";
+import { DEFAULT_SITE, SITES, isSiteId, type SiteId } from "./sites";
 import Academics from "./Academics";
 import ActivityLog from "./ActivityLog";
 import Journeys from "./Journeys";
@@ -38,25 +39,47 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "usage", label: "usage" },
 ];
 
-const PANELS: Record<Tab, () => JSX.Element> = {
-  overview: Overview,
-  live: Live,
-  visitors: Visitors,
-  journeys: Journeys,
-  activity: ActivityLog,
-  links: Links,
-  content: Leaderboard,
-  academics: Academics,
-  redirects: Redirects,
-  usage: Usage,
-};
+function Panel({ tab, site }: { tab: Tab; site: SiteId }) {
+  switch (tab) {
+    case "overview":
+      return <Overview site={site} />;
+    case "live":
+      return <Live site={site} />;
+    case "visitors":
+      return <Visitors site={site} />;
+    case "journeys":
+      return <Journeys site={site} />;
+    case "activity":
+      return <ActivityLog site={site} />;
+    case "links":
+      return <Links site={site} />;
+    case "content":
+      return <Leaderboard site={site} />;
+    case "academics":
+      return <Academics />;
+    case "redirects":
+      return <Redirects />;
+    case "usage":
+      return <Usage />;
+  }
+}
 
 export default function AdminApp() {
   const [session, setSession] = useState<Session | null>(null);
   const [ready, setReady] = useState(false);
   const [admin, setAdmin] = useState(false);
   const [tab, setTab] = useState<Tab>("overview");
+  const [site, setSite] = useState<SiteId>(DEFAULT_SITE);
   const [rebuild, setRebuild] = useState("");
+
+  useEffect(() => {
+    const stored = window.localStorage.getItem("vault_admin_site");
+    if (isSiteId(stored)) setSite(stored);
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem("vault_admin_site", site);
+  }, [site]);
 
   useEffect(() => {
     const supabase = getAuthClient();
@@ -120,6 +143,26 @@ export default function AdminApp() {
 
   return (
     <div className="flex flex-col gap-8">
+      <div className="flex flex-wrap items-center gap-3">
+        <span className="font-hand text-lg leading-none text-pencil">site</span>
+        <div className="flex gap-1 rounded-md border border-ink/60 bg-white p-0.5">
+          {SITES.map((entry) => (
+            <button
+              key={entry.id}
+              type="button"
+              onClick={() => setSite(entry.id)}
+              className={[
+                "rounded px-3 py-1 font-hand text-lg leading-tight transition",
+                site === entry.id ? "bg-ink text-paper" : "hover:bg-marker",
+              ].join(" ")}
+              aria-pressed={site === entry.id}
+            >
+              {entry.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap gap-2">
           {TABS.map(({ id, label }) => (
@@ -164,10 +207,7 @@ export default function AdminApp() {
         </div>
       </div>
 
-      {(() => {
-        const Panel = PANELS[tab];
-        return <Panel />;
-      })()}
+      <Panel tab={tab} site={site} />
     </div>
   );
 }

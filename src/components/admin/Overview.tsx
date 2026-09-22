@@ -7,6 +7,7 @@ import {
   type WebVitalRow,
 } from "../../lib/admin";
 import { formatDay, formatDuration } from "../../lib/format";
+import type { SiteId } from "./sites";
 
 const VITAL_ORDER = ["LCP", "INP", "CLS", "FCP", "TTFB"];
 
@@ -86,7 +87,7 @@ function BarChart({ rows }: { rows: DailyRow[] }) {
   );
 }
 
-export default function Overview() {
+export default function Overview({ site }: { site: SiteId }) {
   const [daily, setDaily] = useState<DailyRow[]>([]);
   const [topPages, setTopPages] = useState<TopPageRow[]>([]);
   const [sources, setSources] = useState<SourceRow[]>([]);
@@ -97,17 +98,19 @@ export default function Overview() {
     let active = true;
     const sb = analytics();
     Promise.all([
-      sb.schema("analytics").from("daily").select("*").order("day", { ascending: true }).limit(90),
+      sb.schema("analytics").from("daily").select("*").eq("site", site).order("day", { ascending: true }).limit(90),
       sb
         .schema("analytics")
         .from("top_pages")
         .select("*")
+        .eq("site", site)
         .order("pageviews", { ascending: false })
         .limit(8),
       sb
         .schema("analytics")
         .from("sources")
         .select("*")
+        .eq("site", site)
         .order("pageviews", { ascending: false })
         .limit(6),
     ]).then(
@@ -130,7 +133,7 @@ export default function Overview() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [site]);
 
   useEffect(() => {
     let active = true;
@@ -138,6 +141,7 @@ export default function Overview() {
       .schema("analytics")
       .from("web_vitals_overall")
       .select("*")
+      .eq("site", site)
       .then(({ data, error }: { data: WebVitalRow[] | null; error: unknown }) => {
         if (!active || error || !data) return;
         setVitals(data);
@@ -145,7 +149,7 @@ export default function Overview() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [site]);
 
   if (status === "loading") {
     return <p className="font-hand text-2xl text-pencil">counting the visits…</p>;

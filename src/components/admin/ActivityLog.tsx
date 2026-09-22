@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { analytics, type CountryRow, type EventRow } from "../../lib/admin";
 import { countryFlag, formatDateTime, formatDay, formatDuration } from "../../lib/format";
 import { downloadCsv } from "./csv";
+import type { SiteId } from "./sites";
 
 const PAGE_SIZE = 50;
 const EXPORT_LIMIT = 10_000;
@@ -55,7 +56,7 @@ function detail(row: EventRow): string {
 const selectClass =
   "rounded-md border border-ink/60 bg-white px-3 py-1.5 text-sm pop-sm focus:border-accent focus:outline-none";
 
-export default function ActivityLog() {
+export default function ActivityLog({ site }: { site: SiteId }) {
   const [type, setType] = useState<string>("all");
   const [query, setQuery] = useState("");
   const [debounced, setDebounced] = useState("");
@@ -74,21 +75,22 @@ export default function ActivityLog() {
 
   useEffect(() => {
     setPage(0);
-  }, [type, debounced, country, days]);
+  }, [type, debounced, country, days, site]);
 
   useEffect(() => {
     analytics()
       .schema("analytics")
       .from("countries")
       .select("*")
+      .eq("site", site)
       .order("visitors", { ascending: false })
       .limit(30)
       .then(({ data }: { data: CountryRow[] | null }) => setCountries(data ?? []));
-  }, []);
+  }, [site]);
 
   // Build a filtered query reused for the table and the CSV export.
   const build = () => {
-    let q = analytics().schema("analytics").from("analytics_events").select("*");
+    let q = analytics().schema("analytics").from("analytics_events").select("*").eq("site", site);
     if (type !== "all") q = q.eq("event_type", type);
     if (country !== "all") q = q.eq("country", country);
     if (days !== "3650") {
@@ -123,7 +125,7 @@ export default function ActivityLog() {
       active = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [type, debounced, country, days, page]);
+  }, [type, debounced, country, days, page, site]);
 
   async function exportCsv() {
     const { data } = await build()

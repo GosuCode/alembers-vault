@@ -8,6 +8,7 @@ import {
   type TopPageRow,
 } from "../../lib/admin";
 import { countryFlag, formatDateTime, formatDuration } from "../../lib/format";
+import type { SiteId } from "./sites";
 
 const PAGE_SIZE = 25;
 
@@ -28,7 +29,7 @@ function Breakdown({ title, rows }: { title: string; rows: [string, number][] })
   );
 }
 
-export default function Visitors() {
+export default function Visitors({ site }: { site: SiteId }) {
   const [events, setEvents] = useState<EventRow[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(0);
@@ -46,16 +47,18 @@ export default function Visitors() {
         .schema("analytics")
         .from("countries")
         .select("*")
+        .eq("site", site)
         .order("visitors", { ascending: false })
         .limit(10),
-      sb.schema("analytics").from("devices").select("*").order("visitors", { ascending: false }).limit(10),
+      sb.schema("analytics").from("devices").select("*").eq("site", site).order("visitors", { ascending: false }).limit(10),
       sb
         .schema("analytics")
         .from("referrers")
         .select("*")
+        .eq("site", site)
         .order("visitors", { ascending: false })
         .limit(10),
-      sb.schema("analytics").from("top_pages").select("path,avg_duration_ms").limit(500),
+      sb.schema("analytics").from("top_pages").select("path,avg_duration_ms").eq("site", site).limit(500),
     ]).then(
       ([c, d, r, dur]: Array<{ data: unknown[] | null; error: unknown }>) => {
         if (!active) return;
@@ -77,7 +80,7 @@ export default function Visitors() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [site]);
 
   useEffect(() => {
     let active = true;
@@ -85,6 +88,7 @@ export default function Visitors() {
     sb.schema("analytics")
       .from("analytics_events")
       .select("*", { count: "exact" })
+      .eq("site", site)
       .eq("event_type", "pageview")
       .order("created_at", { ascending: false })
       .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1)
@@ -100,7 +104,7 @@ export default function Visitors() {
     return () => {
       active = false;
     };
-  }, [page]);
+  }, [site, page]);
 
   if (status === "error") {
     return <p className="text-accent-dark">Could not load visitors.</p>;

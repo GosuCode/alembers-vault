@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { analytics, type DownloadRow, type TopLinkRow } from "../../lib/admin";
+import type { SiteId } from "./sites";
 
 function Stat({ label, value }: { label: string; value: number | string }) {
   return (
@@ -10,7 +11,7 @@ function Stat({ label, value }: { label: string; value: number | string }) {
   );
 }
 
-export default function Links() {
+export default function Links({ site }: { site: SiteId }) {
   const [links, setLinks] = useState<TopLinkRow[]>([]);
   const [downloads, setDownloads] = useState<DownloadRow[]>([]);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
@@ -19,11 +20,12 @@ export default function Links() {
     let active = true;
     const sb = analytics();
     Promise.all([
-      sb.schema("analytics").from("top_links").select("*").order("clicks", { ascending: false }).limit(100),
+      sb.schema("analytics").from("top_links").select("*").eq("site", site).order("clicks", { ascending: false }).limit(100),
       sb
         .schema("analytics")
         .from("downloads")
         .select("*")
+        .eq("site", site)
         .order("downloads", { ascending: false })
         .limit(100),
     ]).then(
@@ -41,7 +43,7 @@ export default function Links() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [site]);
 
   if (status === "loading") {
     return <p className="font-hand text-2xl text-pencil">following the links…</p>;

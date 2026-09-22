@@ -21,8 +21,39 @@ interface Env {
   INGEST_TOKEN: string;
   IP_SALT: string;
   SITE_HOST?: string;
+  ALLOWED_ORIGINS?: string;
   CF_DEPLOY_HOOK?: string;
   ASSETS: Fetcher;
+}
+
+// Hosts that share the analytics backend, collapsed to one `site` label.
+const SITE_ALIASES: Record<string, string> = {
+  "shreeshalember.com.np": "shreeshalember.com.np",
+  "www.shreeshalember.com.np": "shreeshalember.com.np",
+  "vault.shreeshalember.com.np": "vault.shreeshalember.com.np",
+};
+
+function normalizeSite(host: string): string {
+  const lower = host.toLowerCase();
+  return SITE_ALIASES[lower] ?? lower;
+}
+
+function allowedHosts(env: Env, requestHost: string): Set<string> {
+  const hosts = new Set<string>([requestHost.toLowerCase(), "localhost", "127.0.0.1"]);
+  for (const item of (env.ALLOWED_ORIGINS ?? "").split(",")) {
+    const host = item.trim().toLowerCase();
+    if (host) hosts.add(host);
+  }
+  return hosts;
+}
+
+function hostOfUrl(value: string | null): string | null {
+  if (!value) return null;
+  try {
+    return new URL(value).hostname.toLowerCase();
+  } catch {
+    return null;
+  }
 }
 
 const MAX_BODY = 16 * 1024;
@@ -107,10 +138,14 @@ function contentFromPath(path: string): {
   content_type: string;
   content_slug: string | null;
 } {
-  const match = path.match(/^\/(blogs|projects|academic)\/([^/?#]+)/);
+  const match = path.match(/^\/(blogs|blog|projects|academic)\/([^/?#]+)/);
   if (!match) return { content_type: "page", content_slug: null };
   const type =
-    match[1] === "blogs" ? "blog" : match[1] === "projects" ? "project" : "academic";
+    match[1] === "blogs" || match[1] === "blog"
+      ? "blog"
+      : match[1] === "projects"
+        ? "project"
+        : "academic";
   return { content_type: type, content_slug: decodeURIComponent(match[2]) };
 }
 
@@ -122,19 +157,12 @@ function hostOf(url: string): string | null {
   }
 }
 
-function sameOrigin(request: Request): boolean {
+function originAllowed(request: Request, env: Env): boolean {
   const origin = request.headers.get("origin");
   if (!origin) return true; // GET navigations / non-CORS
-  try {
-    const host = new URL(origin).hostname.toLowerCase();
-    return (
-      host === new URL(request.url).hostname.toLowerCase() ||
-      host === "localhost" ||
-      host === "127.0.0.1"
-    );
-  } catch {
-    return false;
-  }
+  const host = hostOfUrl(origin);
+  if (!host) return false;
+  return allowedHosts(env, new URL(request.url).hostname).has(host);
 }
 
 // isolated rate limiter (best-effort per isolate)
@@ -180,7 +208,7 @@ async function ingest(env: Env, payload: Record<string, unknown>): Promise<void>
 // ── handlers ────────────────────────────────────────────────────────────────
 
 async function handleCollect(request: Request, env: Env): Promise<Response> {
-  if (!sameOrigin(request)) return json({ error: "bad origin" }, 403);
+  if (!originAllowed(request, env)) return json({ error: "bad origin" }, 403);
 
   const raw = await request.text();
   if (raw.length > MAX_BODY) return json({ error: "too large" }, 413);
@@ -218,9 +246,22 @@ async function handleCollect(request: Request, env: Env): Promise<Response> {
   const linkUrl = body.link_url ? String(body.link_url).slice(0, MAX_URL) : null;
   const linkHost = linkUrl ? hostOf(linkUrl) : null;
 
+  // Which site this came from: trust an allow-listed host, else the Origin /
+  // Referer, else our own host. www/apex collapse to one label.
+  const allowed = allowedHosts(env, selfHost);
+  const claimed = typeof body.site === "string" ? body.site.toLowerCase() : null;
+  const originHost = hostOfUrl(request.headers.get("origin"));
+  const refererHostHeader = hostOfUrl(request.headers.get("referer"));
+  const siteHost =
+    (claimed && allowed.has(claimed) && claimed) ||
+    (originHost && allowed.has(originHost) && originHost) ||
+    (refererHostHeader && allowed.has(refererHostHeader) && refererHostHeader) ||
+    selfHost;
+
   const payload: Record<string, unknown> = {
     event_type: body.event_type,
     path,
+    site: normalizeSite(siteHost),
     title: body.title,
     referrer,
     referrer_host: referrerHost,
@@ -298,6 +339,7 @@ async function handleDownload(request: Request, env: Env): Promise<Response> {
   await ingest(env, {
     event_type: isView ? "pdf_open" : "download",
     path: url.searchParams.get("from") ?? "/",
+    site: normalizeSite(new URL(request.url).hostname),
     referrer: request.headers.get("referer"),
     source: "internal",
     country: cf.country ?? null,

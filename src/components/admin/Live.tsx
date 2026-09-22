@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { analytics, getAuthClient } from "../../lib/admin";
 import { countryFlag } from "../../lib/format";
+import type { SiteId } from "./sites";
 
 interface LiveEvent {
   visitor_hash: string | null;
@@ -12,7 +13,7 @@ interface LiveEvent {
 
 const WINDOW_MS = 5 * 60 * 1000;
 
-export default function Live() {
+export default function Live({ site }: { site: SiteId }) {
   const [events, setEvents] = useState<LiveEvent[]>([]);
   const [connected, setConnected] = useState(false);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
@@ -23,6 +24,7 @@ export default function Live() {
       .schema("analytics")
       .from("analytics_events")
       .select("visitor_hash,path,created_at,country,device_type")
+      .eq("site", site)
       .eq("event_type", "pageview")
       .gte("created_at", since)
       .order("created_at", { ascending: false })
@@ -40,10 +42,15 @@ export default function Live() {
 
     const supabase = getAuthClient();
     const channel = supabase
-      .channel("live-events")
+      .channel(`live-events-${site}`)
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "analytics", table: "analytics_events" },
+        {
+          event: "INSERT",
+          schema: "analytics",
+          table: "analytics_events",
+          filter: `site=eq.${site}`,
+        },
         (payload) => {
           const row = payload.new as Record<string, unknown>;
           if (row.event_type !== "pageview") return;
@@ -77,7 +84,7 @@ export default function Live() {
       void supabase.removeChannel(channel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [site]);
 
   if (status === "error") return <p className="text-accent-dark">Could not load the live feed.</p>;
 

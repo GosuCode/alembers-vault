@@ -293,6 +293,12 @@ Supabase; the Worker holds no service role.
   deletes raw rows older than 90 days. Aggregates are kept indefinitely and are
   what the dashboard uses for older ranges. Run it by hand with
   `select analytics.rollup_and_prune(90);`.
+- **Multiple sites**: the portfolio at `shreeshalember.com.np` (and `www`)
+  posts to the same `/api/collect` cross-origin — it's the same site, so it's a
+  simple no-preflight request. `ALLOWED_ORIGINS` lists accepted hosts, and
+  `www`/apex collapse to one `site` label (`shreeshalember.com.np`; the vault is
+  `vault.shreeshalember.com.np`). The dashboard has a **site switcher** that
+  filters every tab. See the portfolio repo's `VaultAnalytics` component.
 - **Rebuild**: static HTML and per-paper pages only refresh on a new build.
   `/api/rebuild` (admin-only, verified against `is_admin()`) POSTs a Cloudflare
   deploy hook so uploads/edits reach crawlers. The dashboard's **rebuild site**
@@ -328,6 +334,7 @@ npx wrangler secret put SUPABASE_URL
 npx wrangler secret put SUPABASE_ANON_KEY
 npx wrangler secret put INGEST_TOKEN
 npx wrangler secret put IP_SALT
+npx wrangler secret put ALLOWED_ORIGINS   # e.g. vault.shreeshalember.com.np,shreeshalember.com.np,www.shreeshalember.com.np
 # optional — enables /api/rebuild and the dashboard "rebuild site" button
 npx wrangler secret put CF_DEPLOY_HOOK
 pnpm deploy:worker        # `pnpm run deploy` also works; bare `pnpm deploy` is a reserved pnpm command

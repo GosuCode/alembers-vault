@@ -7,6 +7,7 @@ import {
   type SearchTermRow,
 } from "../../lib/admin";
 import { formatDuration } from "../../lib/format";
+import type { SiteId } from "./sites";
 
 function contentHref(type: string | null, slug: string | null): string | null {
   if (!slug) return null;
@@ -28,7 +29,7 @@ function Panel({ title, hint, children }: { title: string; hint?: string; childr
   );
 }
 
-export default function Leaderboard() {
+export default function Leaderboard({ site }: { site: SiteId }) {
   const [content, setContent] = useState<LeaderboardRow[]>([]);
   const [terms, setTerms] = useState<SearchTermRow[]>([]);
   const [snippets, setSnippets] = useState<CopiedSnippetRow[]>([]);
@@ -39,10 +40,10 @@ export default function Leaderboard() {
     let active = true;
     const sb = analytics();
     Promise.all([
-      sb.schema("analytics").from("content_leaderboard").select("*").order("pageviews", { ascending: false }).limit(100),
-      sb.schema("analytics").from("search_terms").select("*").order("searches", { ascending: false }).limit(100),
-      sb.schema("analytics").from("copied_snippets").select("*").order("copies", { ascending: false }).limit(30),
-      sb.schema("analytics").from("pdf_depth").select("*").order("reads", { ascending: false }).limit(50),
+      sb.schema("analytics").from("content_leaderboard").select("*").eq("site", site).order("pageviews", { ascending: false }).limit(100),
+      sb.schema("analytics").from("search_terms").select("*").eq("site", site).order("searches", { ascending: false }).limit(100),
+      sb.schema("analytics").from("copied_snippets").select("*").eq("site", site).order("copies", { ascending: false }).limit(30),
+      sb.schema("analytics").from("pdf_depth").select("*").eq("site", site).order("reads", { ascending: false }).limit(50),
     ]).then(
       ([contentRes, termsRes, snippetsRes, pdfRes]: Array<{ data: unknown[] | null; error: unknown }>) => {
         if (!active) return;
@@ -60,7 +61,7 @@ export default function Leaderboard() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [site]);
 
   if (status === "loading") {
     return <p className="font-hand text-2xl text-pencil">ranking the shelf…</p>;

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { analytics, type SessionRow } from "../../lib/admin";
 import { countryFlag, formatDateTime, formatDuration } from "../../lib/format";
+import type { SiteId } from "./sites";
 
 const RANGES = [
   { value: "1", label: "today" },
@@ -8,7 +9,7 @@ const RANGES = [
   { value: "30", label: "30 days" },
 ];
 
-export default function Journeys() {
+export default function Journeys({ site }: { site: SiteId }) {
   const [sessions, setSessions] = useState<SessionRow[]>([]);
   const [days, setDays] = useState("7");
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
@@ -21,6 +22,7 @@ export default function Journeys() {
       .schema("analytics")
       .from("sessions")
       .select("*")
+      .eq("site", site)
       .gte("started_at", since)
       .order("started_at", { ascending: false })
       .limit(200)
@@ -36,7 +38,7 @@ export default function Journeys() {
     return () => {
       active = false;
     };
-  }, [days]);
+  }, [days, site]);
 
   return (
     <div className="flex flex-col gap-6">

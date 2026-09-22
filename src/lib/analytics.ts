@@ -22,11 +22,21 @@ export interface TrackPayload {
   meta?: Record<string, unknown>;
 }
 
+export interface SetupOptions {
+  /** Ingest endpoint. Defaults to the same-origin `/api/collect`. */
+  endpoint?: string;
+  /** Optional site label; the Worker derives one from Origin when omitted. */
+  site?: string;
+}
+
 declare global {
   interface Window {
     __vaultTrack?: (payload: TrackPayload) => void;
   }
 }
+
+let endpoint = "/api/collect";
+let siteLabel: string | undefined;
 
 function doNotTrack(): boolean {
   const nav = navigator as Navigator & {
@@ -90,10 +100,11 @@ function send(payload: TrackPayload): void {
     utm: payload.utm ?? utmSource(),
     content_type: payload.content_type ?? derived.content_type,
     content_slug: payload.content_slug ?? derived.content_slug,
+    ...(siteLabel ? { site: siteLabel } : {}),
     ...payload,
   });
 
-  const url = "/api/collect";
+  const url = endpoint;
   try {
     if (navigator.sendBeacon) {
       // text/plain keeps it a "simple" request: no CORS preflight.
@@ -279,10 +290,12 @@ function setupEngagement(): void {
   }, 30_000);
 }
 
-export function setupAnalytics(): void {
+export function setupAnalytics(options: SetupOptions = {}): void {
   if ((window as Window & { __vaultAnalytics?: boolean }).__vaultAnalytics) return;
   if (location.pathname.startsWith("/admin")) return;
   if (doNotTrack()) return;
+  if (options.endpoint) endpoint = options.endpoint;
+  if (options.site) siteLabel = options.site;
   (window as Window & { __vaultAnalytics?: boolean }).__vaultAnalytics = true;
 
   window.__vaultTrack = send;
