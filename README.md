@@ -241,6 +241,70 @@ line; canonical stays on the vault URL, so the vault copy is the indexed one. Se
 [`MEDIUM-IMPORT-PLAN.md`](../MEDIUM-IMPORT-PLAN.md) for the selection and
 rationale.
 
+## Backups
+
+The free plan has **no automatic backups** — Supabase only backs up Pro+ projects.
+Backups here are **manual and local**, and cover **both** the database and the
+`academic` storage bucket (a database dump only contains object *metadata*, not
+the PDF/DOCX bytes).
+
+`scripts/backup.sh` writes `backup/alembers-vault-<UTC-stamp>.tar.gz` containing:
+
+- `roles.sql` — cluster roles
+- `schema.sql` — schema (custom `analytics` schema included)
+- `data.sql` — data (`--use-copy`)
+- `storage/academic/` — every object in the bucket, plus `_manifest.json`
+
+Run it:
+
+```sh
+pnpm backup
+```
+
+It reads `SUPABASE_DB_URL` (the Dashboard → **Connect → Session pooler** string,
+with the database password) and the storage keys from the gitignored `.env`.
+`supabase db dump` runs `pg_dump` in a container, so **Docker is required** (this
+also avoids a client/server version mismatch; the project runs Postgres 17).
+`backup/` is gitignored. By default the newest **8** archives are kept and older
+ones pruned (`KEEP=20 pnpm backup` to change it).
+
+There is no cron/scheduled job — run it by hand whenever you want a snapshot.
+
+### Verify a backup
+
+`pnpm restore:test` restores the newest archive into a throwaway Postgres
+container and checks the row counts and storage manifest. Nothing persists.
+
+```sh
+pnpm restore:test                       # newest archive
+pnpm restore:test -- backup/alembers-vault-20260923T031500Z.tar.gz
+pnpm restore:test -- --keep             # leave the container up to poke around
+```
+
+It uses the image `supabase/postgres:17.6.1.166` (same version as the project,
+with `pgcrypto` + `pg_cron`). `roles.sql` is skipped — it needs cluster-level
+roles and isn't relevant to a data check.
+
+### Restore into a real target (reference)
+
+```sh
+psql --single-transaction -v ON_ERROR_STOP=1 \
+  -f roles.sql -f schema.sql \
+  -c 'SET session_replication_role = replica' \
+  -f data.sql -d "$NEW_DB_URL"
+```
+
+Storage objects are restored separately — re-upload from `storage/academic/`
+(e.g. `supabase storage cp` or the admin academics tab).
+
+### Future offsite copy (not implemented)
+
+Backups currently live on this machine only. If you later want an offsite copy,
+upload the archive to a **private** destination — e.g. a private GitHub repo
+(release asset via a fine-grained PAT), or any S3-compatible store. Do **not**
+use `actions/upload-artifact` on this public repo: artifacts on a public repo
+are readable by anyone with a GitHub account.
+
 ## Deployment (Cloudflare)
 
 Static Astro output served by a small Worker. `wrangler.jsonc` points at

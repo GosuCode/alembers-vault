@@ -28,3 +28,9 @@ pnpm-debug.log*
 
 # raw material dropped for processing (not committed)
 inbox/
+
+# database/storage backups (never commit — may contain user data)
+backup/
+
+# supabase CLI scratch files
+supabase/.temp/

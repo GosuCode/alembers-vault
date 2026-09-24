@@ -16,6 +16,8 @@
     "upload": "node --env-file=.env scripts/upload-academic.mjs",
     "ocr": "node --env-file=.env scripts/ocr-papers.mjs",
     "import:medium": "node scripts/import-medium.mjs",
+    "backup": "scripts/backup.sh",
+    "restore:test": "scripts/restore-test.sh",
     "scan:secrets": "gitleaks git . --redact --no-banner",
     "astro": "astro",
     "prepare": "git config core.hooksPath .githooks || true"
