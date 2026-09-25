@@ -158,10 +158,19 @@ const jsonLd = [
     {
       resource.content_text && (
         <section class="mt-12">
-          <h2 class="font-hand text-3xl sketch-underline">Paper text</h2>
-          <div class="prose mt-5 max-w-none whitespace-pre-line">
-            {resource.content_text}
-          </div>
+          <details class="rounded-lg border border-dashed border-line bg-white/60 p-5">
+            <summary class="cursor-pointer select-none font-hand text-2xl text-pencil">
+              Extracted text (for search)
+            </summary>
+            <p class="mt-2 text-sm text-pencil/70">
+              Plain text pulled from the file — layout, tables and diagrams
+              don't survive extraction. For the real thing, use the viewer
+              above.
+            </p>
+            <div class="prose prose-sm mt-5 max-w-none whitespace-pre-line text-pencil">
+              {resource.content_text}
+            </div>
+          </details>
         </section>
       )
     }

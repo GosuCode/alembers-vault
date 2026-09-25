@@ -2,17 +2,25 @@
 // Fill academic_resources.content_text for PDFs and DOCX files.
 //
 // Strategy (cheap first):
-//   - PDF  → `pdftotext` reads the embedded text layer. Only if that comes back
-//            empty do we fall back to rasterise (ghostscript) + OCR (tesseract).
-//            This avoids wasting minutes OCR-ing born-digital reports.
+//   - PDF  → `pdftotext -layout` reads the embedded text layer, keeping the
+//            original reading order/spacing (matters for mark-allocation
+//            columns like "[2+3]"). Only if that comes back empty do we fall
+//            back to OCR (tesseract), most papers here being phone photos of
+//            a printed paper turned into a PDF, not born-digital text.
+//            For the OCR path we prefer the embedded photo at its native
+//            resolution (`pdfimages`) over re-rasterising at a fixed 300dpi
+//            (`gs`), since a re-rasterise only downsamples a phone photo that's
+//            usually well above 300dpi. `gs` is kept as a fallback for pages
+//            that aren't a single full-page scan (e.g. a born-digital PDF with
+//            small inline images, where `pdfimages` would return fragments).
 //   - DOCX → unzip `word/document.xml` and strip the markup.
 //
 // That text is rendered on each paper page, which is the biggest SEO lever
 // (searches can match document contents). Project reports are extracted too so
 // the text is available if/when the project pages render it.
 //
-// Tools: `pdftotext` always; `gs` + `tesseract` only for scanned PDFs; `unzip`
-// only for DOCX.
+// Tools: `pdftotext`/`pdfimages` always; `gs` + `tesseract` only for scanned
+// PDFs; `unzip` only for DOCX.
 //   sudo apt-get install -y poppler-utils ghostscript tesseract-ocr unzip
 //
 // Usage:
@@ -64,7 +72,7 @@ const PDF_MIME = "application/pdf";
 /** Pull the embedded text layer from a PDF, if any. */
 function pdfText(file) {
   try {
-    return execFileSync("pdftotext", ["-q", file, "-"], {
+    return execFileSync("pdftotext", ["-q", "-layout", file, "-"], {
       encoding: "utf8",
       maxBuffer: 64 * 1024 * 1024,
     });
@@ -73,21 +81,73 @@ function pdfText(file) {
   }
 }
 
-/** Rasterise + OCR a scanned PDF page by page. */
-function pdfOcr(file, dir) {
-  if (!hasCommand("gs") || !hasCommand("tesseract")) {
-    throw new Error("scanned PDF needs ghostscript + tesseract (not installed)");
+/**
+ * If every page is a single full-bleed photo (a phone-scanned paper), pull
+ * those images out at their native resolution instead of re-rasterising with
+ * `gs` at a fixed 300dpi. Returns null when the PDF doesn't look like that
+ * (e.g. a born-digital PDF whose only images are small inline figures), so
+ * the caller can fall back to `gs`.
+ */
+function scannedPageImages(file, dir) {
+  let listing;
+  try {
+    listing = execFileSync("pdfimages", ["-list", file], { encoding: "utf8" });
+  } catch {
+    return null;
   }
+  const rows = listing.trim().split("\n").slice(2).filter(Boolean);
+  const looksLikeFullPageScans =
+    rows.length > 0 &&
+    rows.every((row) => {
+      const cols = row.trim().split(/\s+/);
+      const width = Number(cols[3]);
+      const height = Number(cols[4]);
+      return Math.min(width, height) >= 1000;
+    });
+  if (!looksLikeFullPageScans) return null;
+
+  execFileSync("pdfimages", ["-all", file, join(dir, "scan")], { stdio: "ignore" });
+  const pages = readdirSync(dir)
+    .filter((name) => name.startsWith("scan"))
+    .sort()
+    .map((name) => join(dir, name));
+  return pages.length > 0 ? pages : null;
+}
+
+/** Rasterise a PDF to one PNG per page with `gs` (fallback path). */
+function rasterisePages(file, dir) {
   execFileSync(
     "gs",
     ["-dNOPAUSE", "-dBATCH", "-sDEVICE=png16m", "-r300", `-sOutputFile=${dir}/page-%03d.png`, file],
     { stdio: "ignore" },
   );
-  const pages = readdirSync(dir).filter((name) => name.endsWith(".png")).sort();
+  return readdirSync(dir)
+    .filter((name) => name.endsWith(".png"))
+    .sort()
+    .map((name) => join(dir, name));
+}
+
+/** OCR a scanned PDF page by page. */
+function pdfOcr(file, dir) {
+  if (!hasCommand("tesseract")) {
+    throw new Error("scanned PDF needs tesseract (not installed)");
+  }
+
+  let pages = scannedPageImages(file, dir);
+  if (!pages) {
+    if (!hasCommand("gs")) {
+      throw new Error("scanned PDF needs ghostscript (not installed)");
+    }
+    pages = rasterisePages(file, dir);
+  }
+
   let text = "";
   for (const page of pages) {
+    // --psm 6 (uniform block of text) reads a single-column exam paper more
+    // reliably than the default automatic layout detection (psm 3), which was
+    // prone to dropping question numbers and truncating the last line.
     text +=
-      execFileSync("tesseract", [join(dir, page), "stdout", "-l", "eng"], {
+      execFileSync("tesseract", [page, "stdout", "-l", "eng", "--psm", "6"], {
         encoding: "utf8",
         maxBuffer: 32 * 1024 * 1024,
       }) + "\n";
