@@ -2,6 +2,7 @@
 import { Image } from "astro:assets";
 import { getCollection, render, type CollectionEntry } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import CommentSection from "../../components/CommentSection.tsx";
 import { formatDate } from "../../lib/format";
 import { ordinal } from "../../lib/academic";
 import {
@@ -449,6 +450,12 @@ const jsonLd = [
           </section>
         )
       }
+
+      <CommentSection
+        client:visible
+        contentType="project"
+        contentSlug={project.id}
+      />
     </article>
   </main>
 </BaseLayout>

@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import CommentSection from "../../components/CommentSection.tsx";
 import DocumentViewer from "../../components/DocumentViewer.tsx";
 import {
   fetchAcademicResources,
@@ -186,5 +187,11 @@ const jsonLd = [
         </section>
       )
     }
+
+    <CommentSection
+      client:visible
+      contentType="academic"
+      contentSlug={resource.id}
+    />
   </main>
 </BaseLayout>

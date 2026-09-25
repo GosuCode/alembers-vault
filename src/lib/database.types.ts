@@ -89,6 +89,62 @@ export type Database = {
         }
         Relationships: []
       }
+      comments: {
+        Row: {
+          author_email: string | null
+          author_name: string
+          body: string
+          content_slug: string
+          content_type: string
+          created_at: string
+          id: string
+          ip_hash: string | null
+          parent_id: string | null
+          status: string
+          updated_at: string
+          updated_by: string | null
+          visitor_hash: string | null
+        }
+        Insert: {
+          author_email?: string | null
+          author_name: string
+          body: string
+          content_slug: string
+          content_type: string
+          created_at?: string
+          id?: string
+          ip_hash?: string | null
+          parent_id?: string | null
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          visitor_hash?: string | null
+        }
+        Update: {
+          author_email?: string | null
+          author_name?: string
+          body?: string
+          content_slug?: string
+          content_type?: string
+          created_at?: string
+          id?: string
+          ip_hash?: string | null
+          parent_id?: string | null
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          visitor_hash?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       redirects: {
         Row: {
           created_at: string
@@ -117,6 +173,7 @@ export type Database = {
     Functions: {
       admin_usage: { Args: never; Returns: Json }
       is_admin: { Args: never; Returns: boolean }
+      submit_comment: { Args: { p: Json }; Returns: string }
     }
     Enums: {
       [_ in never]: never
@@ -214,11 +271,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -231,16 +288,18 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : never
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
 
 export const Constants = {
   public: {

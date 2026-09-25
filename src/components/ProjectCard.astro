@@ -34,14 +34,17 @@ const statusLabel =
 <article
   class="group relative flex h-full flex-col card-paper p-6 pop transition duration-200 hover:-translate-y-1"
 >
+  <a
+    href={`/projects/${project.id}/`}
+    class="absolute inset-0 z-0 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-paper"
+    aria-label={title}
+  />
+
   <span class="tape -top-2.5 right-8 rotate-6"></span>
 
   {
     heroImage && (
-      <a
-        href={`/projects/${project.id}/`}
-        class="mb-4 block overflow-hidden rounded-lg border border-ink/60 bg-white"
-      >
+      <div class="mb-4 block overflow-hidden rounded-lg border border-ink/60 bg-white">
         <Image
           src={heroImage}
           alt={`${title} screenshot`}
@@ -49,18 +52,13 @@ const statusLabel =
           sizes="(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 90vw"
           class="h-40 w-full object-cover transition duration-300 group-hover:scale-[1.03]"
         />
-      </a>
+      </div>
     )
   }
 
   <div class="flex items-start justify-between gap-3">
-    <h3 class="text-lg font-semibold leading-snug">
-      <a
-        href={`/projects/${project.id}/`}
-        class="transition-colors group-hover:text-accent"
-      >
-        {title}
-      </a>
+    <h3 class="text-lg font-semibold leading-snug transition-colors group-hover:text-accent">
+      {title}
     </h3>
     {
       featured && (
@@ -97,7 +95,7 @@ const statusLabel =
 
   {
     links.length > 0 && (
-      <div class="mt-auto flex flex-wrap gap-2 pt-5">
+      <div class="relative z-10 mt-auto flex flex-wrap gap-2 pt-5">
         {links.slice(0, 3).map(({ href, label }) => (
           <a
             href={href}

@@ -1,6 +1,7 @@
 ---
 import { getCollection, render, type CollectionEntry } from "astro:content";
 import BlogLayout from "../../layouts/BlogLayout.astro";
+import CommentSection from "../../components/CommentSection.tsx";
 
 export async function getStaticPaths() {
   const posts = await getCollection("blog", ({ data }) => !data.draft);
@@ -29,4 +30,10 @@ const { Content } = await render(post);
   sourceUrl={post.data.sourceUrl}
 >
   <Content />
+  <CommentSection
+    slot="comments"
+    client:visible
+    contentType="blog"
+    contentSlug={post.id}
+  />
 </BlogLayout>

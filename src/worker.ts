@@ -7,6 +7,7 @@
  *
  * Routes:
  *   POST /api/collect   — pageview / click / engagement / search / 404 events
+ *   POST /api/comments  — submit a comment (held for admin approval)
  *   GET  /api/download  — logs a file download, then 302s to Supabase Storage
  *   GET  /api/redirect  — looks up a 301 in public.redirects
  *   GET  /api/health    — config check
@@ -59,6 +60,8 @@ function hostOfUrl(value: string | null): string | null {
 const MAX_BODY = 16 * 1024;
 const MAX_LINKS_PER_MIN = 240;
 const MAX_URL = 2048;
+const MAX_COMMENTS_PER_10MIN = 5;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 // ── helpers ─────────────────────────────────────────────────────────────────
 
@@ -167,16 +170,16 @@ function originAllowed(request: Request, env: Env): boolean {
 
 // isolated rate limiter (best-effort per isolate)
 const rate = new Map<string, { count: number; reset: number }>();
-function rateLimited(key: string): boolean {
+function rateLimited(key: string, limit = MAX_LINKS_PER_MIN, windowMs = 60_000): boolean {
   const now = Date.now();
   const entry = rate.get(key);
   if (!entry || now > entry.reset) {
-    rate.set(key, { count: 1, reset: now + 60_000 });
+    rate.set(key, { count: 1, reset: now + windowMs });
     if (rate.size > 5000) rate.clear();
     return false;
   }
   entry.count += 1;
-  return entry.count > MAX_LINKS_PER_MIN;
+  return entry.count > limit;
 }
 
 async function supabaseFetch(
@@ -304,6 +307,83 @@ async function handleCollect(request: Request, env: Env): Promise<Response> {
   return new Response(null, { status: 204 });
 }
 
+async function handleComment(request: Request, env: Env): Promise<Response> {
+  if (!originAllowed(request, env)) return json({ error: "bad origin" }, 403);
+
+  const raw = await request.text();
+  if (raw.length > MAX_BODY) return json({ error: "too large" }, 413);
+
+  let body: Record<string, unknown>;
+  try {
+    body = JSON.parse(raw);
+  } catch {
+    return json({ error: "bad json" }, 400);
+  }
+
+  // Honeypot: real visitors never fill this hidden field. Pretend success so
+  // bots don't learn to leave it blank.
+  if (typeof body.website === "string" && body.website.trim() !== "") {
+    return json({ ok: true }, 201);
+  }
+
+  const ip = request.headers.get("cf-connecting-ip") ?? "0.0.0.0";
+  const ipHash = await sha256Hex(`${env.IP_SALT}|${ip}`);
+  if (rateLimited(`cm:${ipHash}`, MAX_COMMENTS_PER_10MIN, 600_000)) {
+    return json({ error: "rate limited" }, 429);
+  }
+
+  const contentType = String(body.contentType ?? "");
+  const contentSlug = String(body.contentSlug ?? "").trim();
+  const authorName = String(body.authorName ?? "").trim();
+  const authorEmail = typeof body.authorEmail === "string" ? body.authorEmail.trim() : "";
+  const text = String(body.body ?? "").trim();
+  const parentId = typeof body.parentId === "string" ? body.parentId : null;
+
+  if (!["blog", "project", "academic"].includes(contentType)) {
+    return json({ error: "invalid content type" }, 400);
+  }
+  if (!contentSlug || contentSlug.length > 200) {
+    return json({ error: "invalid content slug" }, 400);
+  }
+  if (!authorName || authorName.length > 80) {
+    return json({ error: "name is required (max 80 chars)" }, 400);
+  }
+  if (!text || text.length > 3000) {
+    return json({ error: "comment is required (max 3000 chars)" }, 400);
+  }
+  if (parentId && !UUID_RE.test(parentId)) {
+    return json({ error: "invalid parent" }, 400);
+  }
+
+  const ua = request.headers.get("user-agent") ?? "";
+  const visitorHash = await sha256Hex(`${env.IP_SALT}|${ip}|${ua}`);
+
+  const res = await supabaseFetch(env, "rpc/submit_comment", {
+    method: "POST",
+    body: JSON.stringify({
+      p: {
+        token: env.INGEST_TOKEN,
+        content_type: contentType,
+        content_slug: contentSlug,
+        parent_id: parentId,
+        author_name: authorName,
+        author_email: authorEmail || null,
+        body: text,
+        ip_hash: ipHash,
+        visitor_hash: visitorHash,
+      },
+    }),
+  });
+
+  if (!res.ok) {
+    const detail = await res.json().catch(() => ({})) as { message?: string };
+    console.warn("[comment] rejected", res.status, detail.message);
+    return json({ error: "could not post comment" }, 400);
+  }
+
+  return json({ ok: true }, 201);
+}
+
 async function handleDownload(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
   const id = url.searchParams.get("id");
@@ -429,6 +509,10 @@ export default {
     if (pathname === "/api/collect") {
       if (request.method !== "POST") return json({ error: "method" }, 405);
       return handleCollect(request, env);
+    }
+    if (pathname === "/api/comments") {
+      if (request.method !== "POST") return json({ error: "method" }, 405);
+      return handleComment(request, env);
     }
     if (pathname === "/api/rebuild") {
       if (request.method !== "POST") return json({ error: "method" }, 405);

@@ -11,12 +11,13 @@ const { post } = Astro.props;
 const { title, description, pubDate, tags, heroImage, heroImageAlt } = post.data;
 ---
 
-<article
-  class="group relative flex h-full flex-col card-paper p-3 pop transition duration-200 hover:-translate-y-1"
+<a
+  href={`/blogs/${post.id}/`}
+  class="group relative flex h-full flex-col card-paper p-3 pop transition duration-200 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-paper"
 >
   <span class="tape -top-2.5 left-6 -rotate-6"></span>
 
-  <a href={`/blogs/${post.id}/`} class="block overflow-hidden rounded-md border border-ink/15">
+  <div class="block overflow-hidden rounded-md border border-ink/15">
     {
       heroImage ? (
         <Image
@@ -30,7 +31,7 @@ const { title, description, pubDate, tags, heroImage, heroImageAlt } = post.data
         </div>
       )
     }
-  </a>
+  </div>
 
   <div class="flex flex-1 flex-col px-2 pb-2 pt-4">
     <time
@@ -39,13 +40,8 @@ const { title, description, pubDate, tags, heroImage, heroImageAlt } = post.data
     >
       {formatDate(pubDate)}
     </time>
-    <h3 class="mt-2 text-lg font-semibold leading-snug">
-      <a
-        href={`/blogs/${post.id}/`}
-        class="transition-colors group-hover:text-accent"
-      >
-        {title}
-      </a>
+    <h3 class="mt-2 text-lg font-semibold leading-snug transition-colors group-hover:text-accent">
+      {title}
     </h3>
     <p class="mt-2 line-clamp-3 text-sm text-pencil">{description}</p>
     {
@@ -60,4 +56,4 @@ const { title, description, pubDate, tags, heroImage, heroImageAlt } = post.data
       )
     }
   </div>
-</article>
+</a>

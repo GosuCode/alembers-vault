@@ -4,6 +4,7 @@ import { getAuthClient, isAdmin, signOut, triggerRebuild } from "../../lib/admin
 import { DEFAULT_SITE, SITES, isSiteId, type SiteId } from "./sites";
 import Academics from "./Academics";
 import ActivityLog from "./ActivityLog";
+import Comments from "./Comments";
 import Journeys from "./Journeys";
 import Leaderboard from "./Leaderboard";
 import Links from "./Links";
@@ -23,6 +24,7 @@ type Tab =
   | "links"
   | "content"
   | "academics"
+  | "comments"
   | "redirects"
   | "usage";
 
@@ -35,6 +37,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "links", label: "links" },
   { id: "content", label: "content" },
   { id: "academics", label: "academics" },
+  { id: "comments", label: "comments" },
   { id: "redirects", label: "redirects" },
   { id: "usage", label: "usage" },
 ];
@@ -57,6 +60,8 @@ function Panel({ tab, site }: { tab: Tab; site: SiteId }) {
       return <Leaderboard site={site} />;
     case "academics":
       return <Academics />;
+    case "comments":
+      return <Comments />;
     case "redirects":
       return <Redirects />;
     case "usage":
