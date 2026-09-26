@@ -1,0 +1,229 @@
+---
+import { Image } from "astro:assets";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { site } from "../data/site";
+
+import collegeLife from "../assets/journey/college-life.jpeg";
+import covidClassroom1 from "../assets/journey/covid-classroom-1.jpg";
+import covidClassroom2 from "../assets/journey/covid-classroom-2.jpg";
+import computerLab from "../assets/journey/computer-lab.jpg";
+import firstLaptop from "../assets/journey/first-laptop.jpg";
+import technoZestProject from "../assets/journey/techno-zest-project.jpg";
+import technoZestAward from "../assets/journey/techno-zest-award.jpeg";
+import khumaiDandaTrek from "../assets/journey/khumai-danda-trek.jpg";
+import hackathon from "../assets/journey/hackathon.jpeg";
+import tutoringJuniors from "../assets/journey/tutoring-juniors.jpeg";
+import finalExamHangout from "../assets/journey/final-exam-hangout.jpeg";
+
+interface InlineLink {
+  label: string;
+  href: string;
+  external?: boolean;
+}
+
+function splitWithLinks(text: string, links: InlineLink[]) {
+  let parts: (string | { link: InlineLink })[] = [text];
+  for (const link of links) {
+    const next: (string | { link: InlineLink })[] = [];
+    for (const part of parts) {
+      if (typeof part !== "string") {
+        next.push(part);
+        continue;
+      }
+      const segments = part.split(link.label);
+      segments.forEach((segment, i) => {
+        if (segment) next.push(segment);
+        if (i < segments.length - 1) next.push({ link });
+      });
+    }
+    parts = next;
+  }
+  return parts;
+}
+
+const entries = [
+  {
+    label: "prelude",
+    title: "How I ended up in BCA",
+    body: [
+      "My mom consulted a colleague, and a friend suggested I look into BCA. I sat entrance exams for both BBA at Butwal Multiple Campus and BCA at Butwal Kalika Campus, and passed both. I chose BCA — my love for computers won out over accounting.",
+    ],
+  },
+  {
+    label: "1st & 2nd sem",
+    title: "Zoom classes and a global pandemic",
+    body: [
+      "It was COVID time, so most of my classes those first two semesters happened from home over Zoom. Everything was new and we were all just going with the flow — same as +2.",
+    ],
+    images: [
+      { src: covidClassroom1, alt: "Masked classmates back at campus during COVID" },
+      { src: covidClassroom2, alt: "A masked lecture, everyone spaced out across the benches" },
+    ],
+  },
+  {
+    label: "3rd sem",
+    title: "A new laptop and a harder question",
+    body: [
+      "I bought a new laptop — an Acer Nitro 5. It was a frustrating semester, caught between continuing my studies in Nepal or preparing to go abroad. I even took a PTE course chasing that second option. The dilemma cost me: I failed Microprocessor that semester.",
+    ],
+    images: [
+      { src: firstLaptop, alt: "Unboxing the new Acer Nitro 5" },
+      { src: computerLab, alt: "Back in the computer lab, masks off, code on the whiteboard" },
+    ],
+  },
+  {
+    label: "4th sem",
+    title: "First real project, first real friends",
+    body: [
+      "I started learning to program in earnest, and this semester brought the curriculum's first practical project. I built a blogging application called WIRE. Working on it pulled me closer to the \"padaku\" group — the people who are still my closest friends today.",
+      "I also installed Linux for the first time — Pop!_OS, an Ubuntu-based distro — and never really looked back.",
+    ],
+    links: [{ label: "WIRE", href: "/projects/wire-blogging/" }],
+  },
+  {
+    label: "5th sem",
+    title: "Where it all started clicking",
+    body: [
+      "I stopped caring about marks from this semester on — connections and skills were the only things that mattered to me. I joined a tech club called Code for Change, which led to an internship offer that became one of the stepping stones to my software development career.",
+      "I also took part in our college's yearly Techno Management Zest and placed 2nd for a project we more or less \"borrowed\" from YouTube. And our friend group went trekking to Khumai Danda in Pokhara — one of the best trips of the whole degree. So much happened this semester; it's the one I look back on most.",
+    ],
+    images: [
+      { src: technoZestProject, alt: "Presenting our self-driving car project at Techno Management Zest 2080" },
+      { src: technoZestAward, alt: "Holding the certificate after placing 2nd at Techno Management Zest" },
+      { src: khumaiDandaTrek, alt: "Friend group at the top of Khumai Danda, Pokhara, flying the Nepali flag" },
+    ],
+    links: [
+      { label: "Code for Change", href: "https://codeforchangenepal.com/", external: true },
+    ],
+  },
+  {
+    label: "6th sem",
+    title: "First job, and teaching what I knew",
+    body: [
+      "I was hired as a Junior Developer at Golden Technosoft Solution Pvt. Ltd., where I ended up working for two more years. My friends and I also started teaching juniors coding and other skills at our own college — and got paid for it. This semester I built another project, Artisan Nepal, which other students later used for their own work too.",
+    ],
+    images: [
+      { src: tutoringJuniors, alt: "Teaching a lab full of juniors at college" },
+      { src: collegeLife, alt: "Huddled around a desk checking results with classmates" },
+    ],
+    links: [{ label: "Artisan Nepal", href: "/projects/artisan-nepal/" }],
+  },
+  {
+    label: "7th sem",
+    title: "Internships, remote and otherwise",
+    body: [
+      "Internships were the big theme this semester. Some of my friends went to Kathmandu for theirs; I kept doing mine remotely. My friend and I also kept teaching juniors and getting paid for it, same as before.",
+      "I also dragged some of the juniors we'd been teaching into a hackathon with me — great experience, and the event photographer caught me mid-presentation looking far more confident than I felt.",
+    ],
+    images: [
+      { src: hackathon, alt: "On stage at the Innovate X BMC Hackathon" },
+    ],
+  },
+  {
+    label: "8th sem",
+    title: "The last project, and closing the loop",
+    body: [
+      "The final semester brought the last project: LearnMate, a learning management system. I also helped classmates build their own projects and reports, which earned me a bit of extra money along the way. It was a memorable semester in its own right — capped off with a ride out with friends after our final exams.",
+    ],
+    images: [
+      { src: finalExamHangout, alt: "Friends together at a café after the final BCA exam" },
+    ],
+    links: [{ label: "LearnMate", href: "/projects/learnmate/" }],
+  },
+];
+---
+
+<BaseLayout
+  title={`My BCA journey · ${site.name}`}
+  description={`How I got into BCA, what happened across all 8 semesters, and how it shaped my path into software development.`}
+>
+  <main class="mx-auto max-w-3xl px-6 py-14">
+    <header class="max-w-xl">
+      <p class="font-hand text-2xl text-accent">the story so far —</p>
+      <h1 class="mt-1 text-4xl font-semibold tracking-tight sm:text-5xl">
+        My BCA journey
+      </h1>
+      <p class="mt-4 text-lg text-pencil">
+        Four years, eight semesters, and the people and projects that turned
+        into a career. This is the unfiltered version.
+      </p>
+    </header>
+
+    <div class="margin-rule mt-12 space-y-14 pl-6 sm:pl-10">
+      {
+        entries.map((entry) => (
+          <section>
+            <p class="font-hand text-xl text-accent">{entry.label}</p>
+            <h2 class="mt-1 text-2xl font-semibold tracking-tight sketch-underline">
+              {entry.title}
+            </h2>
+            <div class="prose prose-lg mt-4 max-w-none">
+              {entry.body.map((paragraph) => (
+                <p>
+                  {splitWithLinks(paragraph, entry.links ?? []).map((part) =>
+                    typeof part === "string" ? (
+                      part
+                    ) : (
+                      <a
+                        href={part.link.href}
+                        target={part.link.external ? "_blank" : undefined}
+                        rel={part.link.external ? "noopener noreferrer" : undefined}
+                        class="font-semibold text-accent underline decoration-dotted underline-offset-2 transition hover:text-accent-dark"
+                      >
+                        {part.link.label}
+                      </a>
+                    ),
+                  )}
+                </p>
+              ))}
+            </div>
+            {entry.images && (
+              <div class="mt-6 grid gap-6 sm:grid-cols-2">
+                {entry.images.map((img, i) => (
+                  <figure
+                    class:list={[
+                      "relative rounded-lg border border-ink/80 bg-white p-2 pop-sm",
+                      i % 2 === 0 ? "-rotate-1" : "rotate-1",
+                    ]}
+                  >
+                    <span
+                      class:list={[
+                        "tape -top-3 left-1/2 -translate-x-1/2",
+                        i % 2 === 0 ? "-rotate-3" : "rotate-3",
+                      ]}
+                    />
+                    <Image
+                      src={img.src}
+                      alt={img.alt}
+                      class="rounded-md object-cover"
+                      widths={[400, 800]}
+                      sizes="(min-width: 640px) 400px, 100vw"
+                    />
+                  </figure>
+                ))}
+              </div>
+            )}
+          </section>
+        ))
+      }
+    </div>
+
+    <div class="margin-rule mt-14 pl-6 sm:pl-10">
+      <div class="relative -rotate-1 rounded-lg border border-ink/80 bg-white p-6 pop-sm">
+        <span class="tape -top-3 left-10 -rotate-6"></span>
+        <p class="font-hand text-2xl text-accent">thanks for reading —</p>
+        <p class="mt-2 max-w-md text-pencil">
+          That's the journey so far. Four years down, and the story's still
+          going — there's more to build, break, and write about.
+        </p>
+      </div>
+
+      <a
+        href="/about/"
+        class="mt-6 inline-block rounded-md border border-ink/80 bg-white px-5 py-2.5 text-sm font-semibold pop-sm transition hover:-translate-y-0.5"
+      >
+        ← back to about
+      </a>
+    </div>
+  </main>
+</BaseLayout>
