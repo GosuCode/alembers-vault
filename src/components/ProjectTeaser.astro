@@ -1,0 +1,47 @@
+---
+import { Image } from "astro:assets";
+import type { CollectionEntry } from "astro:content";
+import { ordinal } from "../lib/academic";
+
+interface Props {
+  project: CollectionEntry<"projects">;
+}
+
+const { project } = Astro.props;
+const { title, description, program, semester, heroImage } = project.data;
+
+const semesterLabel = semester
+  ? `${program ? `${program} · ` : ""}${ordinal(semester)} semester`
+  : program;
+---
+
+<a
+  href={`/projects/${project.id}/`}
+  class="group relative flex h-full flex-col card-paper p-3 pop transition duration-200 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-paper"
+>
+  <span class="tape -top-2.5 left-6 -rotate-6"></span>
+
+  {
+    heroImage && (
+      <div class="block overflow-hidden rounded-md border border-ink/15">
+        <Image
+          src={heroImage}
+          alt={`${title} screenshot`}
+          widths={[300, 600]}
+          sizes="(min-width: 1024px) 23vw, (min-width: 640px) 45vw, 90vw"
+          class="aspect-[16/9] w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+        />
+      </div>
+    )
+  }
+
+  <div class="flex flex-1 flex-col px-2 pb-2 pt-4">
+    {semesterLabel && (
+      <p class="font-hand text-lg leading-none text-pencil">{semesterLabel}</p>
+    )}
+    <h3 class="mt-2 text-lg font-semibold leading-snug transition-colors group-hover:text-accent">
+      {title}
+    </h3>
+    <p class="mt-2 line-clamp-2 text-sm text-pencil">{description}</p>
+  </div>
+</a>

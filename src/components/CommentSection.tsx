@@ -239,7 +239,7 @@ export default function CommentSection({ contentType, contentSlug }: Props) {
   );
 
   return (
-    <section className="mt-14 border-t border-dashed border-line pt-8">
+    <section id="comments" className="mt-14 scroll-mt-20 border-t border-dashed border-line pt-8">
       <h2 className="font-hand text-3xl sketch-underline">
         comments{rows ? ` (${count})` : ""}
       </h2>

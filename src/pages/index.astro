@@ -2,6 +2,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import BlogCard from "../components/BlogCard.astro";
 import ProjectCard from "../components/ProjectCard.astro";
+import ProjectTeaser from "../components/ProjectTeaser.astro";
 import { getCollection } from "astro:content";
 import { site } from "../data/site";
 import { fetchAcademicResources } from "../lib/academic";
@@ -19,6 +20,9 @@ const resourceCount = (await fetchAcademicResources()).filter(
 
 const latestPosts = posts.slice(0, 3);
 const featuredProjects = projects.slice(0, 2);
+const bcaProjects = projects
+  .filter((project) => project.data.program === "BCA")
+  .sort((a, b) => (a.data.semester ?? 0) - (b.data.semester ?? 0));
 
 const metrics = [
   { href: "/academic/", label: "past papers", value: resourceCount },
@@ -132,6 +136,28 @@ const metrics = [
         {latestPosts.map((post) => <BlogCard post={post} />)}
       </div>
     </section>
+
+    {
+      bcaProjects.length > 0 && (
+        <section class="mt-20">
+          <div class="flex flex-wrap items-end justify-between gap-3">
+            <h2 class="font-hand text-3xl sketch-underline">
+              BCA semester projects
+            </h2>
+            <a
+              href="/projects/"
+              class="font-hand text-xl text-accent transition hover:text-accent-dark"
+            >
+              all projects →
+            </a>
+          </div>
+
+          <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {bcaProjects.map((project) => <ProjectTeaser project={project} />)}
+          </div>
+        </section>
+      )
+    }
 
     <section class="mt-20">
       <div class="flex flex-wrap items-end justify-between gap-3">

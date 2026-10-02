@@ -20,8 +20,8 @@ const {
 const nav = [
   { href: "/", label: "home" },
   { href: "/blogs/", label: "blogs" },
-  { href: "/academic/", label: "academic" },
-  { href: "/projects/", label: "projects" },
+  { href: "/academic/", label: "bca papers" },
+  { href: "/projects/", label: "bca projects" },
   { href: "/journey/", label: "journey" },
   { href: "/about/", label: "about" },
 ];
@@ -34,7 +34,7 @@ const year = new Date().getFullYear();
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
   <head>
     <meta charset="utf-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -101,6 +101,8 @@ const year = new Date().getFullYear();
                     isActive(href)
                       ? "squiggle text-accent"
                       : "text-ink/80",
+                    (href === "/projects/" || href === "/academic/") &&
+                      "whitespace-nowrap rounded-md bg-mint px-2 py-0.5 -mx-2",
                   ]}
                   aria-current={isActive(href) ? "page" : undefined}
                 >
