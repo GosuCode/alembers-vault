@@ -93,9 +93,12 @@ const {
 const semesterLabel = semester ? `${ordinal(semester)} semester` : null;
 const programLabel = program ? `${program}${semesterLabel ? ` · ${semesterLabel}` : ""}` : semesterLabel;
 
+const kindLabel = tags.includes("internship") ? "Internship" : "Project";
 const seoTitle =
   program && semester
-    ? `${title} · ${program} ${ordinal(semester)} Semester ${tags.includes("internship") ? "Internship" : "Project"}`
+    ? title.toLowerCase().includes(kindLabel.toLowerCase())
+      ? `${program} ${ordinal(semester)} Semester: ${title}`
+      : `${program} ${ordinal(semester)} Semester ${kindLabel}: ${title}`
     : `${title} · ${program ? `${program} ` : ""}Projects`;
 const yearLabel = year
   ? `${yearBs ? `${yearBs} BS · ` : ""}${year} AD`
