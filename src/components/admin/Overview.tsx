@@ -67,6 +67,30 @@ function StatCard({ label, value, hint }: { label: string; value: string; hint?:
   );
 }
 
+// The daily view only has rows for days with events, so zero-fill to `days` calendar days ending today (UTC).
+function fillDays(rows: DailyRow[], days: number): DailyRow[] {
+  const byDay = new Map(rows.map((row) => [row.day, row]));
+  const filled: DailyRow[] = [];
+  const end = new Date();
+  for (let i = days - 1; i >= 0; i--) {
+    const day = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate() - i))
+      .toISOString()
+      .slice(0, 10);
+    filled.push(
+      byDay.get(day) ?? {
+        day,
+        pageviews: 0,
+        visitors: 0,
+        clicks: 0,
+        downloads: 0,
+        not_found: 0,
+        avg_duration_ms: 0,
+      },
+    );
+  }
+  return filled;
+}
+
 function BarChart({ rows }: { rows: DailyRow[] }) {
   const max = Math.max(1, ...rows.map((row) => row.pageviews));
   return (
@@ -74,7 +98,7 @@ function BarChart({ rows }: { rows: DailyRow[] }) {
       {rows.map((row) => (
         <div
           key={row.day}
-          className="group relative flex-1"
+          className="group relative flex h-full flex-1 items-end"
           title={`${row.day}: ${row.pageviews} views · ${row.visitors} visitors`}
         >
           <div
@@ -159,10 +183,10 @@ export default function Overview({ site }: { site: SiteId }) {
   }
 
   const todayKey = new Date().toISOString().slice(0, 10);
-  const last = (days: number) => daily.slice(-days);
   const today = sum(daily.filter((row) => row.day === todayKey));
-  const week = sum(last(7));
-  const month = sum(last(30));
+  const week = sum(fillDays(daily, 7));
+  const monthRows = fillDays(daily, 30);
+  const month = sum(monthRows);
 
   return (
     <div className="flex flex-col gap-8">
@@ -192,14 +216,14 @@ export default function Overview({ site }: { site: SiteId }) {
       <section className="rounded-lg border border-ink/60 bg-white p-5">
         <div className="flex items-baseline justify-between">
           <h2 className="font-hand text-2xl">pageviews</h2>
-          <span className="text-xs text-pencil">last {Math.min(30, daily.length)} days</span>
+          <span className="text-xs text-pencil">last 30 days</span>
         </div>
         <div className="mt-4">
-          <BarChart rows={last(30)} />
+          <BarChart rows={monthRows} />
         </div>
         <div className="mt-2 flex justify-between text-xs text-pencil">
-          <span>{daily.length ? formatDay(last(30)[0].day) : ""}</span>
-          <span>{daily.length ? formatDay(last(30)[last(30).length - 1].day) : ""}</span>
+          <span>{formatDay(monthRows[0].day)}</span>
+          <span>{formatDay(monthRows[monthRows.length - 1].day)}</span>
         </div>
       </section>
 
