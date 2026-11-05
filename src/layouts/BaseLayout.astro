@@ -57,6 +57,16 @@ const year = new Date().getFullYear();
     />
     <title>{title}</title>
     {
+      !noindex && (
+        <script
+          is:inline
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9507823832552118"
+          crossorigin="anonymous"
+        />
+      )
+    }
+    {
       jsonLd && (
         <script
           type="application/ld+json"

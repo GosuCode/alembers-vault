@@ -12,7 +12,9 @@ const contact = site.socials.find((social) => social.href.startsWith("mailto:"))
   <main class="prose prose-lg mx-auto max-w-3xl px-6 py-12">
     <h1 class="font-hand text-4xl not-prose">privacy</h1>
     <p class="not-prose mt-2 text-lg text-pencil">
-      Short version: no cookies, no ad trackers, no personal profiles.
+      Short version: my own analytics use no cookies and build no personal
+      profiles. Ads are served by Google AdSense, which may use cookies (see
+      below).
     </p>
 
     <h2>What is measured</h2>
@@ -36,13 +38,28 @@ const contact = site.socials.find((social) => social.href.startsWith("mailto:"))
 
     <h2>What is not stored</h2>
     <ul>
-      <li>No cookies, no localStorage identifiers, no cross-site tracking.</li>
+      <li>
+        No cookies, no localStorage identifiers, no cross-site tracking from my
+        own analytics (third-party ads are covered below).
+      </li>
       <li>
         No raw IP address. The IP is combined with a secret salt and hashed, so
         repeat visits can be counted without keeping the address itself.
       </li>
       <li>No names, emails or accounts unless you email me directly.</li>
     </ul>
+
+    <h2>Advertising</h2>
+    <p>
+      This site shows ads through Google AdSense. Google and its partners may
+      use cookies or similar identifiers to serve and measure ads, including
+      personalised ads based on your visits to this and other sites. I do not
+      receive or store that data. You can manage ad personalisation in
+      <a href="https://myadcenter.google.com/">Google's Ad Settings</a> or opt
+      out at <a href="https://www.aboutads.info/">aboutads.info</a>. See also
+      <a href="https://policies.google.com/technologies/partner-sites">how
+      Google uses data from sites that use its services</a>.
+    </p>
 
     <h2>Do Not Track</h2>
     <p>
