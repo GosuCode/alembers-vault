@@ -15,6 +15,9 @@ export const site = {
     "This vault is my corner of the internet — the past papers and project documents I wished were easier to find during my degree, write-ups for the things I build, and notes on the problems I run into.",
   ],
 
+  // Where past-paper contributions get sent (used by the ContributeNote card).
+  contributeEmail: "gosucode1945@gmail.com",
+
   socials: [
     { label: "GitHub", href: "https://github.com/GosuCode" },
     { label: "Medium", href: "https://medium.com/@gosucode" },

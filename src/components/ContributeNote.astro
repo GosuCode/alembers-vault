@@ -1,0 +1,105 @@
+---
+import { site } from "../data/site";
+
+interface Props {
+  /** Paper the reader is on — pre-fills the email so contributors know what's useful. */
+  title?: string;
+  semester?: string | null;
+  course?: string | null;
+}
+
+const { title, semester, course } = Astro.props;
+const email = site.contributeEmail;
+
+const subject = title
+  ? `BCA paper contribution — ${[semester, course].filter(Boolean).join(" · ") || title}`
+  : "BCA paper contribution";
+
+const body = [
+  "Hi Alember,",
+  "",
+  "I'd like to add a past question paper to the vault.",
+  "",
+  "Subject: ",
+  "Course code: ",
+  "Semester: ",
+  "Exam year: ",
+  "",
+  "Credit me as (leave blank to stay anonymous): ",
+  "",
+  title ? `(Found the note on: ${title})` : "",
+  "",
+  "[attach the photo / scan / PDF]",
+]
+  .filter((line, i, arr) => !(line === "" && arr[i - 1] === ""))
+  .join("\n");
+
+const mailto = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+---
+
+<aside
+  class="relative mt-10 rounded-lg border border-ink/80 bg-marker/40 p-6 pop sm:p-8"
+  aria-labelledby="contribute-heading"
+>
+  <span class="tape -top-3 left-8 -rotate-3" aria-hidden="true"></span>
+
+  <p class="font-hand text-2xl text-accent">pass it forward</p>
+  <h2
+    id="contribute-heading"
+    class="mt-1 text-2xl font-semibold leading-snug tracking-tight sm:text-3xl"
+  >
+    That old exam paper in your bag is someone's <span class="marker">study plan</span>.
+  </h2>
+
+  <p class="mt-4 text-pencil">
+    Have a paper that's missing here? Send a photo or PDF and I'll add it.
+  </p>
+
+  <ul class="mt-5 grid gap-2 text-sm sm:grid-cols-3">
+    <li class="rounded-md border border-dashed border-ink/40 bg-white/70 px-3 py-2">
+      📸 <strong>Any format</strong> — photo, scan or PDF
+    </li>
+    <li class="rounded-md border border-dashed border-ink/40 bg-white/70 px-3 py-2">
+      🗓️ <strong>Any year</strong> — old papers still help
+    </li>
+    <li class="rounded-md border border-dashed border-ink/40 bg-white/70 px-3 py-2">
+      🙌 <strong>Get credited</strong> — or stay anonymous
+    </li>
+  </ul>
+
+  <div class="mt-6 flex flex-wrap items-center gap-3">
+    <a
+      href={mailto}
+      class="rounded-md border border-ink/80 bg-accent px-5 py-2 text-sm font-semibold text-white pop-sm transition hover:-translate-y-0.5 hover:bg-accent-dark"
+    >
+      Send a paper ✉
+    </a>
+    <button
+      type="button"
+      data-copy-email={email}
+      class="rounded-md border border-ink/80 bg-white px-5 py-2 text-sm font-semibold pop-sm transition hover:-translate-y-0.5"
+    >
+      Copy email
+    </button>
+    <span class="font-mono text-xs text-pencil select-all">{email}</span>
+  </div>
+
+  <p class="mt-4 font-hand text-lg text-pencil">
+    Mention the subject, semester and year — I'll handle the rest. Thank you 🌱
+  </p>
+</aside>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>("[data-copy-email]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const original = btn.textContent;
+      try {
+        await navigator.clipboard.writeText(btn.dataset.copyEmail ?? "");
+        btn.textContent = "Copied ✓";
+      } catch {
+        btn.textContent = "Copy failed";
+      }
+      setTimeout(() => (btn.textContent = original), 1800);
+    });
+  });
+</script>

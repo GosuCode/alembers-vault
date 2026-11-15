@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import CommentSection from "../../components/CommentSection.tsx";
+import ContributeNote from "../../components/ContributeNote.astro";
 import DocumentViewer from "../../components/DocumentViewer.tsx";
 import {
   fetchAcademicResources,
@@ -163,7 +164,7 @@ const jsonLd = [
 
     {
       resource.content_text && (
-        <section class="mt-12">
+        <section class="mt-10">
           <details class="rounded-lg border border-dashed border-line bg-white/60 p-5">
             <summary class="cursor-pointer select-none font-hand text-2xl text-pencil">
               Extracted text (for search)
@@ -181,9 +182,15 @@ const jsonLd = [
       )
     }
 
+    <ContributeNote
+      title={resource.title}
+      semester={semesterText}
+      course={resource.course}
+    />
+
     {
       siblings.length > 0 && (
-        <section class="mt-14 border-t border-dashed border-line pt-8">
+        <section class="mt-10 border-t border-dashed border-line pt-6">
           <h2 class="font-hand text-3xl sketch-underline">
             More {semesterText ?? "papers"}
           </h2>

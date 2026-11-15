@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import AcademicExplorer from "../../components/AcademicExplorer.tsx";
+import ContributeNote from "../../components/ContributeNote.astro";
 import { fetchAcademicResources, slugFor } from "../../lib/academic";
 
 // Fetched at build time so the paper list is rendered into the HTML (crawlable),
@@ -44,5 +45,7 @@ const itemListJsonLd = {
     <div class="mt-12">
       <AcademicExplorer client:load initialResources={resources} />
     </div>
+
+    <ContributeNote />
   </main>
 </BaseLayout>
